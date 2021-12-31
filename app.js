@@ -21,16 +21,28 @@ app.use(bodyParser.json())
 // MySQL
 const pool = mysql.createPool({
     connectionLimit: 10,
-    host:'localhost',
-    user:'root',
-    password:'',
-    database:'SCSbilling'
+    host:'scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com',
+    user:'scs2021admin',
+    password:'nodejs#$#878',
+    database:'scsappdbservices'
+
+    // host:'localhost',
+    // user:'root',
+    // password:'',
+    // database:'SCSbilling'
+
+    // username and password
+    // scs2021admin
+    // nodejs#$#878
+    
+    // dbname
+    // scsappdbservices
 
     // aws database
-    // host:'scs-service.cglbjoi49zmb.ap-south-1.rds.amazonaws.com',
-    // user:'admin',
-    // password:'qwert54321',
-    // database:'scsservice'
+    // host:'scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com',
+    // user:'scs2021admin',
+    // password:'nodejs#$#878',
+    // database:'scsappdbservices'
 })
 
 // app login
@@ -293,133 +305,3 @@ app.post('/login', (req, res) => {
 app.listen(port, ()=>{
     console.log(`Listen on port ${port}`)
 })
-
-// // upload image to s3 bucket
-// app.post('/images', upload.single('file'), async(req,res)=> {
-//     const file = req.file
-//     console.log(file)
-//     const result = await uploadFile(file)
-//     await unlinkFile(file.path)
-//     console.log(result)
-//     // const description = req.body.description
-//     res.send({ imagePath: `images/${result.Key}` })
-//     // res.send("jo");
-// })
-
-// // get image from s3
-// app.get('/images/:key', (req, res)=>{
-//     const key = req.params.key
-//     const readStream = getFileStream(key)
-//     readStream.pipe(res)
-// })
-
-// // delete image in s3
-// app.get('/deleteimage/:key', async (req, res)=>{
-//     const key = req.params.key
-//     const result = await deleteFile(key)
-//     console.log(result)
-//     res.send(result)
-// })
-
-// // get all records
-// app.get('', (req, res) => {
-//     pool.getConnection((err, connection) => {
-//         if(err) throw err;
-//         console.log(`connected ${connection.threadId}`)
-
-//         connection.query('SELECT * FROM employee', (err, rows) => {
-//             connection.release()    //return the connection to the pool
-
-//             if(!err){
-//                 res.send(rows)
-//             }
-//             else{
-//                 console.log(err)
-//             }
-//         })
-//     })
-// })
-
-// // get by id
-// app.get('/:id', (req, res) => {
-//     pool.getConnection((err, connection) => {
-//         if(err) throw err;
-//         console.log(`connected ${connection.threadId}`)
-
-//         connection.query('SELECT * FROM employee WHERE id = ?', [req.params.id], (err, rows) => {
-//             connection.release()    //return the connection to the pool
-
-//             if(!err){
-//                 res.send(rows)
-//             }
-//             else{
-//                 console.log(err)
-//             }
-//         })
-//     })
-// })
-
-// // delete a record
-// app.delete('/:id', (req, res) => {
-//     pool.getConnection((err, connection) => {
-//         if(err) throw err;
-//         console.log(`connected ${connection.threadId}`)
-
-//         connection.query('DELETE FROM employee WHERE id = ?', [req.params.id], (err, rows) => {
-//             connection.release()    //return the connection to the pool
-
-//             if(!err){
-//                 res.send(`Employee record deleted. Record ID ${req.params.id}`)
-//             }
-//             else{
-//                 console.log(err)
-//             }
-//         })
-//     })
-// })
-
-// // add record
-// app.post('', (req, res) => {
-//     pool.getConnection((err, connection) => {
-//         if(err) throw err;
-//         console.log(`connected ${connection.threadId}`)
-
-//         const params = req.body
-
-//         connection.query('INSERT INTO employee SET ?', params, (err, rows) => {
-//             connection.release()    //return the connection to the pool
-
-//             if(!err){
-//                 res.send("Inserted")
-//             }
-//             else{
-//                 console.log(err)
-//             }
-//         })
-
-//         console.log(req.body)
-//     })
-// })
-
-// // update a record
-// app.put('', (req, res) => {
-//     pool.getConnection((err, connection) => {
-//         if(err) throw err;
-//         console.log(`connected ${connection.threadId}`)
-
-//         const { id, name, branch, username, password } = req.body
-
-//         connection.query('UPDATE employee SET name = ? WHERE id = ?', [name, id], (err, rows) => {
-//             connection.release()    //return the connection to the pool
-
-//             if(!err){
-//                 res.send(`Updated ${name}`)
-//             }
-//             else{
-//                 console.log(err)
-//             }
-//         })
-
-//         console.log(req.body)
-//     })
-// })
