@@ -256,7 +256,7 @@ app.get('/lastservices/:id', (req, res) => {
         if(err) throw err;
         console.log(`connected ${connection.threadId}`)
 
-        connection.query('SELECT customer_name, customer_phoneno, bill_date FROM bills WHERE (employee_id = ? AND bill_date BETWEEN NOW() - INTERVAL 30 DAY AND NOW() ) ORDER BY id DESC', [req.params.id], (err, rows) => {
+        connection.query('SELECT customer_name, customer_phoneno, invoice_id ,bill_date FROM bills WHERE (employee_id = ? AND bill_date BETWEEN NOW() - INTERVAL 30 DAY AND NOW() ) ORDER BY id DESC', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
             if(!err){
