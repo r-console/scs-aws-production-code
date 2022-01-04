@@ -308,7 +308,7 @@ app.post('/getbill/:id', (req, res) => {
 
         console.log(req.body)
 
-        connection.query('SELECT * FROM bills WHERE customer_phoneno = ? OR invoice_id = ?', [req.body.search,req.body.search], (err, rows) => {
+        connection.query('SELECT * FROM bills WHERE (customer_phoneno = ? OR invoice_id = ?) AND employee_id = ?', [req.body.search,req.body.search,req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
             if(!err){
