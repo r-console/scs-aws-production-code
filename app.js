@@ -24,15 +24,15 @@ app.use(bodyParser.json({ limit: '10mb' }))
 // MySQL
 const pool = mysql.createPool({
     connectionLimit: 10,
-    // host:'scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com',
-    // user:'scs2021admin',
-    // password:'nodejs#$#878',
-    // database:'scsappdbservices'
+    host:'scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com',
+    user:'scs2021admin',
+    password:'nodejs#$#878',
+    database:'scsappdbservices'
 
-    host:'localhost',
-    user:'root',
-    password:'',
-    database:'SCSbilling'
+    //host:'localhost',
+    //user:'root',
+    //password:'',
+    //database:'SCSbilling'
 
     // username and password
     // scs2021admin
