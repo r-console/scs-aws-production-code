@@ -364,7 +364,7 @@ app.post('/getbill/:id', (req, res) => {
         {
             connection.query(`SELECT * FROM bills WHERE 
                             (customer_phoneno = ? OR invoice_id = ? OR customer_name= ?) 
-                            AND (customer_phoneno <> 0 OR invoice_id <> NULL OR customer_name <> NULL) 
+                            AND (invoice_id <> NULL AND customer_name <> NULL) 
                             AND employee_id = ?`, 
                             [req.body.search,req.body.search,req.body.search,req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
@@ -1047,13 +1047,13 @@ app.post('/uploadimgs3', (req, res) => {
                     connection.release()    //return the connection to the pool
         
                     if(!err){
-                        res.send({status:200})
+                        // res.send({status:200})
+                        res.send({id:req.body.id,s_sign_name:s_sign_name,c_sign_name:c_sign_name})
                     }
                     else{
                         console.log(err)
                     }
                 })
-                res.send({s_sign_name:s_sign_name,c_sign_name:c_sign_name})
             }
         }
     })
