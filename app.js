@@ -24,15 +24,15 @@ app.use(bodyParser.json({ limit: '10mb' }))
 // MySQL
 const pool = mysql.createPool({
     connectionLimit: 10,
-    host:'scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com',
-    user:'scs2021admin',
-    password:'nodejs#$#878',
-    database:'scsappdbservices'
+    // host:'scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com',
+    // user:'scs2021admin',
+    // password:'nodejs#$#878',
+    // database:'scsappdbservices'
 
-    // host:'localhost',
-    // user:'root',
-    // password:'',
-    // database:'SCSbilling'
+    host:'localhost',
+    user:'root',
+    password:'',
+    database:'SCSbilling'
 
     // username and password
     // scs2021admin
@@ -363,7 +363,8 @@ app.post('/getbill/:id', (req, res) => {
         if(req.body.search != '')
         {
             connection.query(`SELECT * FROM bills WHERE 
-                            (customer_phoneno = ? OR invoice_id = ? OR customer_name= ?)
+                            (customer_phoneno = ? OR invoice_id = ? OR customer_name= ?) 
+                            AND (invoice_id <> NULL OR customer_name <> NULL) 
                             AND employee_id = ?`, 
                             [req.body.search,req.body.search,req.body.search,req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
@@ -1046,13 +1047,13 @@ app.post('/uploadimgs3', (req, res) => {
                     connection.release()    //return the connection to the pool
         
                     if(!err){
-                        // res.send({status:200})
-                        res.send({id:req.body.id,s_sign_name:s_sign_name,c_sign_name:c_sign_name})
+                        res.send({status:200})
                     }
                     else{
                         console.log(err)
                     }
                 })
+                res.send({s_sign_name:s_sign_name,c_sign_name:c_sign_name})
             }
         }
     })
