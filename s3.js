@@ -13,6 +13,32 @@ const s3 = new S3({
     secretAccessKey
 })
 
+function uploadBase64(buf, keyName){
+    
+    var data = {
+        Key: `sign/${keyName}`,
+        Bucket: bucketName,
+        Body: buf,
+        ContentEncoding: 'base64',
+        ContentType: 'image/jpeg'
+    };
+
+    let flag = 0;
+    s3.putObject(data, function(err, data){
+        if (err) { 
+          console.log(err);
+          console.log('Error uploading data: ', data); 
+          flag = 1;
+        } else {
+          console.log('successfully uploaded the image!');
+          flag =0;
+        }
+    });
+
+    return flag
+}
+exports.uploadBase64 = uploadBase64
+
 // upload image file to s3
 function uploadFile(file){
     const fileStream = fs.createReadStream(file.path)

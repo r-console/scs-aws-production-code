@@ -2,21 +2,24 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const mysql = require('mysql')
 const morgan = require('morgan')
+const cors = require('cors')
 // image upload
+const { v4: uuidv4 } = require('uuid');
 const fs = require('fs')
 const util = require('util')
 const unlinkFile = util.promisify(fs.unlink)
 const multer  = require('multer')
 const upload = multer({ dest: 'uploads/' })
 
-const { uploadFile, getFileStream, deleteFile } = require('./s3')
+const { uploadFile, getFileStream, deleteFile, uploadBase64 } = require('./s3');
+const { param } = require('express/lib/request');
 
 const app = express()
 app.use(morgan('dev'))
-const port = process.env.PORT || 9000
+app.use(cors())
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }))
+app.use(bodyParser.json({ limit: '10mb' }))
 
 // MySQL
 const pool = mysql.createPool({
@@ -58,18 +61,13 @@ app.post('/login', (req, res) => {
 
             if(!err){
                 if (rows.length != 0) {
-                    if(rows[0].account_type == 2){
-                        const userData = {
-                            id: rows[0].id,
-                            name: rows[0].employee_name,
-                            branch: rows[0].branch_id,
-                            last_invoice_id:rows[0].last_invoice_id
-                        }
-                        res.send({userData:userData,status:200})
+                    const userData = {
+                        id: rows[0].id,
+                        name: rows[0].employee_name,
+                        branch: rows[0].branch_id,
+                        last_invoice_id:rows[0].last_invoice_id
                     }
-                    else{
-                        res.send({status:300})
-                    }
+                    res.send({userData:userData,status:200})
                   }else{
                     console.log('Nothing match');
                     res.send({status:300})
@@ -86,46 +84,66 @@ app.post('/login', (req, res) => {
 
 // add bill
 app.post('/addbill', (req, res) => {
-    pool.getConnection((err, connection) => {
+    pool.getConnection( async (err, connection) => {
         if(err) throw err;
         console.log(`connected ${connection.threadId}`)
 
         const params = req.body
 
-        console.log(params)
+        const Sersign = param.s_sign
+        const Cussign = param.c_sign
 
-        connection.query('INSERT INTO bills SET ?', params.Bill, (err, rows) => {
-            // connection.release()    //return the connection to the pool
+        let s_sign_name = uuidv4()
+        let c_sign_name = uuidv4()
 
-            const insert_id = rows.insertId
+        buf1 = Buffer.from(req.body.Bill.s_sign.replace(/^data:image\/\w+;base64,/, ""),'base64')
+        const result1 = await uploadBase64(buf1, s_sign_name)
+        if(result1 === 0){
+            buf2 = Buffer.from(req.body.Bill.c_sign.replace(/^data:image\/\w+;base64,/, ""),'base64')
+            const result2 = await uploadBase64(buf2, c_sign_name)
+            if(result2 === 0){
+                params.Bill.s_sign = s_sign_name
+                params.Bill.c_sign = c_sign_name
+                connection.query('INSERT INTO bills SET ?', params.Bill, (err, rows) => {
+                    // connection.release()    //return the connection to the pool
 
-            if(!err){
-                connection.query('UPDATE employee SET last_invoice_id = ? WHERE id = ?', [params.last_invoice_id, params.Bill.employee_id], (err, rows) => {
-                    
+                    const insert_id = rows.insertId
+
                     if(!err){
-
-                        connection.query('INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?', 
-                        [params.machineDetails.map(item => [item.machineModel, item.partNo, insert_id ])],
-                        (err, mrows) => {
-                            connection.release()    //return the connection to the pool
-                
+                        connection.query('UPDATE employee SET last_invoice_id = ? WHERE id = ?', [params.last_invoice_id, params.Bill.employee_id], (err, rows) => {
+                            
                             if(!err){
-                                res.send({message:"Successfully inserted bill details and machine details", status:200})
-                            }
-                            else{
-                                console.log(err)
-                                res.send({message:"some error", status:500})
+
+                                connection.query('INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?', 
+                                [params.machineDetails.map(item => [item.machineModel, item.partNo, insert_id ])],
+                                (err, mrows) => {
+                                    connection.release()    //return the connection to the pool
+                        
+                                    if(!err){
+                                        res.send({message:"Successfully inserted bill details and machine details", status:200})
+                                    }
+                                    else{
+                                        console.log(err)
+                                        res.send({message:"some error", status:500})
+                                    }
+                                })
                             }
                         })
+                        
+                    }
+                    else{
+                        console.log(err)
+                        res.send({message:"some error", status:500})
                     }
                 })
-                
             }
             else{
-                console.log(err)
-                res.send({message:"some error", status:500})
-            }
-        })
+                
+            }            
+        }
+        else{
+            
+        }
 
     })
 })
@@ -137,35 +155,48 @@ app.post('/addofflinebill', (req, res) => {
         console.log(`connected ${connection.threadId}`)
 
         const params = req.body.offlineBills
-
         let inserted = 0;
-
         // console.log(params)
-        params.map(item=>{
-          connection.query('INSERT INTO bills SET ?', item.Bill, (err, rows) => {
-            if(!err){
+        params.map( async (item)=>{
+            
+            let s_sign_name = uuidv4()
+            let c_sign_name = uuidv4()
 
-                let iv_id = item.last_invoice_id;
-                let ins_bill_id = rows.insertId;
+            buf1 = Buffer.from(item.Bill.s_sign.replace(/^data:image\/\w+;base64,/, ""),'base64')
+            const result1 = await uploadBase64(buf1, s_sign_name)
+            if(result1 === 0){
+                buf2 = Buffer.from(item.Bill.c_sign.replace(/^data:image\/\w+;base64,/, ""),'base64')
+                const result2 = await uploadBase64(buf2, c_sign_name)
+                if(result2 === 0){
+                    item.Bill.s_sign = s_sign_name
+                    item.Bill.c_sign = c_sign_name
+          
+                    connection.query('INSERT INTO bills SET ?', item.Bill, (err, rows) => {
+                        if(!err){
 
-                connection.query('UPDATE employee SET last_invoice_id = ? WHERE id = ?', [iv_id, item.Bill.employee_id], (err, rows) => {
-                    if(!err){
-                        connection.query('INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?', 
-                        [item.machineDetails.map(item => [item.machineModel, item.partNo, ins_bill_id ])],
-                        (err, mrows) => {
-                            if(err){
-                                console.log(err)
-                                inserted = 1;
-                            }
-                        })
-                    }
-                })
+                            let iv_id = item.last_invoice_id;
+                            let ins_bill_id = rows.insertId;
+
+                            connection.query('UPDATE employee SET last_invoice_id = ? WHERE id = ?', [iv_id, item.Bill.employee_id], (err, rows) => {
+                                if(!err){
+                                    connection.query('INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?', 
+                                    [item.machineDetails.map(item => [item.machineModel, item.partNo, ins_bill_id ])],
+                                    (err, mrows) => {
+                                        if(err){
+                                            console.log(err)
+                                            inserted = 1;
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                        else{
+                            console.log(err)
+                            inserted = 1;
+                        }
+                    })
+                }
             }
-            else{
-                console.log(err)
-                inserted = 1;
-            }
-        })  
         })
 
         if(inserted == 0){
@@ -229,12 +260,11 @@ app.get('/dashboard/total/:id', (req, res) => {
         if(err) throw err;
         console.log(`connected ${connection.threadId}`)
 
-        connection.query('SELECT id FROM bills WHERE employee_id = ?', [req.params.id], (err, rows) => {
+        connection.query('SELECT count(*) as total FROM bills WHERE employee_id = ?', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
             if(!err){
-                const total = rows.length;
-                res.send({total:total})
+                res.send({total:rows[0].total})
             }
             else{
                 console.log(err)
@@ -300,6 +330,28 @@ app.get('/lastservices/:id', (req, res) => {
     })
 })
 
+app.post('/getbillsrange/:userid', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        console.log(req.body)
+        
+        connection.query('SELECT * FROM bills WHERE employee_id = ? AND ( bill_date >= ? AND bill_date <= ?)', 
+                        [req.params.userid, req.body.date1,req.body.date2], (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send(rows)
+            }
+            else{
+                console.log(err)
+                res.send({status:300})
+            }
+        })
+    })
+})
+
 // get searched record from post method
 app.post('/getbill/:id', (req, res) => {
     pool.getConnection((err, connection) => {
@@ -308,10 +360,17 @@ app.post('/getbill/:id', (req, res) => {
 
         console.log(req.body)
 
-        connection.query('SELECT * FROM bills WHERE (customer_phoneno = ? OR invoice_id = ?) AND employee_id = ?', [req.body.search,req.body.search,req.params.id], (err, rows) => {
+        if(req.body.search != '')
+        {
+            connection.query(`SELECT * FROM bills WHERE 
+                            (customer_phoneno = ? OR invoice_id = ? OR customer_name= ?) 
+                            AND (customer_phoneno <> 0 OR invoice_id <> NULL OR customer_name <> NULL) 
+                            AND employee_id = ?`, 
+                            [req.body.search,req.body.search,req.body.search,req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
             if(!err){
+                console.log(rows)
                 if (rows.length != 0) {
                     res.send(rows[0])
                 }
@@ -324,6 +383,10 @@ app.post('/getbill/:id', (req, res) => {
                 res.send({status:300})
             }
         })
+        }
+        else{
+            res.send({status:300})
+        }
     })
 })
 
@@ -388,6 +451,27 @@ app.get('/getmachinedetails/:id', (req, res) => {
     })
 })
 
+// get credit bills for employees
+app.get('/mycreditbills/:userid', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        const payment_status = 'PENDING'
+
+        connection.query('SELECT * FROM bills WHERE employee_id = ? AND payment_status = ?', [req.params.userid, payment_status], (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send(rows)
+            }
+            else{
+                console.log(err)
+            }
+        })
+    })
+})
+
 // web login
 app.post('/weblogin', (req, res) => {
     pool.getConnection((err, connection) => {
@@ -396,28 +480,47 @@ app.post('/weblogin', (req, res) => {
 
         const { username, password } = req.body
 
-        connection.query('SELECT * FROM employee WHERE username = ? AND password = ? ', [username, password], (err, rows) => {
-            connection.release()    //return the connection to the pool
-
+        connection.query('SELECT * FROM admin_table WHERE username = ? AND password = ?', [username, password], (err, rows) => {
             if(!err){
-                if (rows.length != 0) {
+            if(rows.length != 0){
+                if(rows[0].account_type == 1){
+                    connection.query('SELECT branch_name FROM branch WHERE id = ?', [rows[0].branch_id], (err, data) => {
+                        connection.release()    //return the connection to the pool
+            
+                        if(!err){
+                            const userData = {
+                                id: rows[0].id,
+                                name: rows[0].name,
+                                username: rows[0].username,
+                                branch_id: rows[0].branch_id,
+                                account_type: rows[0].account_type,
+                                branch_name: data[0].branch_name
+                            }
+                            res.send({userData:userData,status:200})
+                        }
+                        else{
+                            res.send({status:300})
+                        }
+                    })
+                }
+                else{
                     const userData = {
                         id: rows[0].id,
-                        name: rows[0].employee_name,
-                        branch: rows[0].branch_id,
+                        name: rows[0].name,
+                        username: rows[0].username,
+                        branch_id: rows[0].branch_id,
                         account_type: rows[0].account_type
                     }
-                    res.send(userData)
-                  }else{
-                    console.log('Nothing match');
-                  }
+                    res.send({userData:userData,status:200})
+                }
+            }else{
+                res.send({status:300})
+            }
             }
             else{
-                console.log(err)
+                res.send({status:300})
             }
         })
-
-        console.log(req.body)
     })
 })
 
@@ -441,6 +544,522 @@ app.post('/addmanager',(req, res)=>{
     })
 })
 
+// add branch
+app.post('/addbranch',(req, res)=>{
+    pool.getConnection((err,connection)=>{
+        if(err)throw err;
+        console.log(`connected as id ${connection.threadId}`)
+
+        const params=req.body
+        connection.query('INSERT INTO branch SET ?',params,(err, rows)=>{
+            connection.release();
+            if(!err)
+            {
+                res.send({status:200})
+            }
+            else{
+                res.send({status:300})
+            }
+        })
+    })
+})
+
+app.get('/getmanagers/:adminid', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        connection.query(`SELECT admin_table.*, branch.branch_name FROM admin_table JOIN branch ON branch.id = admin_table.branch_id AND admin_table.id <> ?`, [req.params.adminid], (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send({managers:rows,status:200})
+            }
+            else{
+                console.log(err)
+                res.send({status:300})
+            }
+        })
+    })
+})
+
+// get all branches
+app.get('/allbranchs', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(!err){
+            console.log(`connected ${connection.threadId}`)
+
+            connection.query('SELECT * FROM branch', (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    if (rows.length != 0) {
+                        res.send({branchs:rows,status:200})
+                    }
+                    else{
+                        res.send({status:300})
+                    }
+                }
+                else{
+                    console.log(err)
+                }
+            })
+        }else{
+            res.send({msg:'Database not connected',status:300})
+            console.log('Database not connected')
+        }
+    })
+})
+
+app.put('/updatemanager', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(!err){
+            console.log(`connected ${connection.threadId}`)
+
+            const data = req.body.currentMng
+
+            connection.query('UPDATE admin_table SET name = ?, username= ?, password=?  WHERE id = ?', 
+                            [data.name, data.username, data.password, data.id],
+                            (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({status:200})
+                }
+                else{
+                    console.log(err)
+                }
+            })
+        }else{
+            res.send({msg:'Database not connected',status:300})
+            console.log('Database not connected')
+        }
+    })
+})
+
+// delete manager
+app.delete('/delmanager/:managerid', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(!err){
+            console.log(`connected ${connection.threadId}`)
+
+            connection.query('DELETE FROM admin_table WHERE id = ?', [req.params.managerid], (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }else{
+            res.send({msg:'Database not connected',status:300})
+            console.log('Database not connected')
+        }
+    })
+})
+// admin section end
+
+// manager accounts section
+// dashboard box1
+app.get('/totalbillscount/:branchid', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(!err){
+            console.log(`connected ${connection.threadId}`)
+
+            connection.query(`SELECT count(*) as total_bills FROM bills JOIN employee ON employee.id = bills.employee_id 
+                            AND employee.branch_id = ?`, [req.params.branchid], (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({total:rows[0].total_bills,status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }else{
+            res.send({msg:'Database not connected',status:300})
+            console.log('Database not connected')
+        }
+    })
+})
+
+// dashboard box2
+app.get('/monthbillscount/:branchid/:month', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(!err){
+            console.log(`connected ${connection.threadId}`)
+
+            connection.query(`SELECT count(*) as month_bills FROM bills JOIN employee 
+                            ON bills.employee_id = employee.id AND employee.branch_id = ? AND MONTH(bill_date) = ?`, 
+                            [req.params.branchid, req.params.month], (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({total:rows[0].month_bills,status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }else{
+            res.send({msg:'Database not connected',status:300})
+            console.log('Database not connected')
+        }
+    })
+})
+
+// dasdhboard box3
+app.get('/todaybillscount/:branchid', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        connection.query(`SELECT count(*) as total FROM bills JOIN employee 
+                    ON bills.employee_id = employee.id AND employee.branch_id = ? AND DATE(bill_date) = CURDATE()`, [req.params.branchid], (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send({total:rows[0].total,status:200})
+            }
+            else{
+                console.log(err)
+                res.send({status:300})
+            }
+        })
+    })
+})
+
+// get bills by branch
+app.post('/getbranchbills', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        const params = req.body
+
+        if(params.searchText != '' && params.date1 !=null && params.date2 != null){
+            connection.query(`SELECT bills.*, employee.employee_name, machine.* FROM bills 
+                            JOIN machine ON machine.bill_id = bills.id
+                            JOIN employee ON (bills.employee_id = employee.id) 
+                            AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?)) 
+                            AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)`,
+                            [params.branch_id, params.date1, params.date2, params.searchText, params.searchText, params.searchText],
+                            (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({bills:rows,status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }else if(params.searchText == '' && params.date2 != null && params.date2 !=null){
+            connection.query(`SELECT bills.*, employee.employee_name, machine.* FROM bills 
+                            JOIN machine ON machine.bill_id = bills.id
+                            JOIN employee ON (bills.employee_id = employee.id) 
+                            AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?))`,
+                        [params.branch_id, params.date1, params.date2], 
+                        (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({bills:rows,status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }
+        else{
+            connection.query(`SELECT bills.*, employee.employee_name, machine.* FROM bills 
+                            JOIN machine ON machine.bill_id = bills.id
+                            JOIN employee ON (bills.employee_id = employee.id) 
+                            AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? ))`,
+                        [params.branch_id, params.searchText, params.searchText, params.searchText], 
+                        (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({bills:rows,status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }
+    })
+})
+
+// get all bills admin account
+app.post('/allbills', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        const params = req.body
+
+        if(params.searchText != '' && (params.date1 !=null || params.date2 != null)){
+            connection.query(`SELECT bills.*, employee.employee_name, machine.* FROM bills 
+                            JOIN machine ON machine.bill_id = bills.id
+                            JOIN employee ON (bills.employee_id = employee.id) 
+                            AND (bills.bill_date >= ? AND bills.bill_date <= ?)
+                            AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)`,
+                            [params.date1, params.date2, params.searchText, params.searchText, params.searchText],
+                            (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({bills:rows,status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }else if(params.searchText == '' && (params.date2 != null || params.date2 !=null)){
+            connection.query(`SELECT bills.*, employee.employee_name, machine.* FROM bills 
+                            JOIN machine ON machine.bill_id = bills.id
+                            JOIN employee ON (bills.employee_id = employee.id) 
+                            AND bills.bill_date >= ? AND bills.bill_date <= ?`,
+                        [params.date1, params.date2], 
+                        (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({bills:rows,status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }
+        else{
+            connection.query(`SELECT bills.*, employee.employee_name FROM bills 
+                            JOIN employee ON (bills.employee_id = employee.id) 
+                            AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? )`,
+                        [params.searchText, params.searchText, params.searchText], 
+                        (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({bills:rows,status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
+                }
+            })
+        }
+    })
+})
+
+// add employee
+app.post('/addemp',(req, res)=>{
+    pool.getConnection((err,connection)=>{
+        if(err)throw err;
+        console.log(`connected as id ${connection.threadId}`)
+
+        const params=req.body.employee
+        console.log(params)
+        connection.query('INSERT INTO employee SET ?',params,(err, rows)=>{
+            connection.release();
+            if(!err)
+            {
+                res.send({status:200})
+            }
+            else{
+                res.send({status:300})
+            }
+        })
+    })
+})
+
+// delete employee by id
+app.delete('/deleteemp/:id', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        connection.query('DELETE FROM employee WHERE id = ?', [req.params.id], (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send({status:200})
+            }
+            else{
+                console.log(err)
+                res.send({status:300})
+            }
+        })
+    })
+})
+
+// get employees by branch id
+app.get('/getemp/:branchid', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        connection.query('SELECT * FROM employee WHERE branch_id = ?', [req.params.branchid], (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send({emp:rows,status:200})
+            }
+            else{
+                console.log(err)
+            }
+        })
+    })
+})
+
+// update employee details
+app.put('/updateemp', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        const data = req.body.currentEmp
+
+        connection.query('UPDATE employee SET employee_name = ?, username= ?, password=?  WHERE id = ?', 
+                        [data.employee_name, data.username, data.password, data.id],
+                        (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send({status:200})
+            }
+            else{
+                console.log(err)
+            }
+        })
+    })
+})
+// manager accounts section end
+
+// image
+// upload image to s3 bucket
+app.post('/images', upload.single('file'), async(req,res)=> {
+    // const file = req.params.file
+    // console.log(file)
+    // const result = await uploadFile(file)
+    // // await unlinkFile(file.path)
+    // console.log(result)
+    // const description = req.body.description
+    // res.send({ imagePath: `images/${result.Key}` })
+    // res.send("jo");
+
+    const keyName = uuidv4();
+
+    buf = Buffer.from(req.body.file.replace(/^data:image\/\w+;base64,/, ""),'base64')
+    const result = uploadBase64(buf, keyName)
+    if(result === 0){
+        res.send({msg:'Image uploaded succeffuly', status:200, imagename: keyName})
+    }
+    else{
+        res.send({msg:'Unable to upload image', status:300})
+    }
+})
+
+// get image from s3
+app.get('/images/:key', (req, res)=>{
+    const key = req.params.key
+    const readStream = getFileStream(key)
+    readStream.pipe(res)
+})
+
+// delete image in s3
+app.get('/deleteimage/:key', async (req, res)=>{
+    const key = req.params.key
+    const result = await deleteFile(key)
+    console.log(result)
+    res.send(result)
+})
+
+
+// get image and upload to s3
+app.get('/getimage/ssign/:id', async (req, res)=>{
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        connection.query('SELECT s_sign from bills WHERE id = ?', [req.params.id],
+                        (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send(rows[0].s_sign)
+            }
+            else{
+                console.log(err)
+            }
+        })
+    })
+})
+
+app.get('/getimage/csign/:id', async (req, res)=>{
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        connection.query('SELECT c_sign from bills WHERE id = ?', [req.params.id],
+                        (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send(rows[0].c_sign)
+            }
+            else{
+                console.log(err)
+            }
+        })
+    })
+})
+
+app.post('/uploadimgs3', (req, res) => {
+    pool.getConnection( async (err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        let s_sign_name = uuidv4()
+        let c_sign_name = uuidv4()
+
+        console.log(req.body)
+
+        buf1 = Buffer.from(req.body.s_sign.replace(/^data:image\/\w+;base64,/, ""),'base64')
+        const result1 = await uploadBase64(buf1, s_sign_name)
+        if(result1 === 0){
+            buf2 = Buffer.from(req.body.c_sign.replace(/^data:image\/\w+;base64,/, ""),'base64')
+            const result2 = await uploadBase64(buf2, c_sign_name)
+            if(result2 === 0){
+                connection.query('UPDATE bills SET s_sign = ?, c_sign = ? WHERE id = ?', [s_sign_name, c_sign_name, req.body.id], (err, rows) => {
+                    connection.release()    //return the connection to the pool
+        
+                    if(!err){
+                        res.send({status:200})
+                    }
+                    else{
+                        console.log(err)
+                    }
+                })
+                res.send({s_sign_name:s_sign_name,c_sign_name:c_sign_name})
+            }
+        }
+    })
+})
+
+const port = process.env.PORT || 9000
 app.listen(port, ()=>{
     console.log(`Listen on port ${port}`)
 })
