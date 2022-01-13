@@ -363,8 +363,7 @@ app.post('/getbill/:id', (req, res) => {
         if(req.body.search != '')
         {
             connection.query(`SELECT * FROM bills WHERE 
-                            (customer_phoneno = ? OR invoice_id = ? OR customer_name= ?) 
-                            AND (invoice_id <> NULL AND customer_name <> NULL) 
+                            (customer_phoneno = ? OR invoice_id = ? OR customer_name= ?)
                             AND employee_id = ?`, 
                             [req.body.search,req.body.search,req.body.search,req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
