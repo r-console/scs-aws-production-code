@@ -315,6 +315,27 @@ app.get('/dashboard/today/:id', (req, res) => {
     })
 })
 
+// update pending status
+app.put('/paymentstatus/:id', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log(`connected ${connection.threadId}`)
+
+        connection.query('UPDATE bills SET payment_status = ? WHERE id = ?', 
+                        [req.body.pay_status, req.params.id],
+                        (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send({status:200})
+            }
+            else{
+                console.log(err)
+            }
+        })
+    })
+})
+
 // get all records
 app.get('/lastservices/:id', (req, res) => {
     pool.getConnection((err, connection) => {
@@ -745,8 +766,7 @@ app.post('/getbranchbills', (req, res) => {
         const params = req.body
 
         if(params.searchText != '' && params.date1 !=null && params.date2 != null){
-            connection.query(`SELECT bills.*, employee.employee_name, machine.* FROM bills 
-                            JOIN machine ON machine.bill_id = bills.id
+            connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                             JOIN employee ON (bills.employee_id = employee.id) 
                             AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?)) 
                             AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)`,
@@ -763,8 +783,7 @@ app.post('/getbranchbills', (req, res) => {
                 }
             })
         }else if(params.searchText == '' && params.date2 != null && params.date2 !=null){
-            connection.query(`SELECT bills.*, employee.employee_name, machine.* FROM bills 
-                            JOIN machine ON machine.bill_id = bills.id
+            connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                             JOIN employee ON (bills.employee_id = employee.id) 
                             AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?))`,
                         [params.branch_id, params.date1, params.date2], 
@@ -781,8 +800,7 @@ app.post('/getbranchbills', (req, res) => {
             })
         }
         else{
-            connection.query(`SELECT bills.*, employee.employee_name, machine.* FROM bills 
-                            JOIN machine ON machine.bill_id = bills.id
+            connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                             JOIN employee ON (bills.employee_id = employee.id) 
                             AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? ))`,
                         [params.branch_id, params.searchText, params.searchText, params.searchText], 
