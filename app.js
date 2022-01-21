@@ -28,7 +28,6 @@ const pool = mysql.createPool({
     user:'scs2021admin',
     password:'nodejs#$#878',
     database:'scsappdbservices'
-    
 
     // host:'localhost',
     // user:'root',
@@ -53,8 +52,7 @@ const pool = mysql.createPool({
 app.post('/login', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const { username, password } = req.body
 
         connection.query('SELECT * FROM employee WHERE username = ? AND password = ?', [username, password], (err, rows) => {
@@ -87,8 +85,7 @@ app.post('/login', (req, res) => {
 app.post('/addbill', (req, res) => {
     pool.getConnection( async (err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const params = req.body
 
         const Sersign = param.s_sign
@@ -157,8 +154,7 @@ app.post('/addbill', (req, res) => {
 app.post('/addofflinebill', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const params = req.body.offlineBills
         let inserted = 0;
         // console.log(params)
@@ -218,8 +214,7 @@ app.post('/addofflinebill', (req, res) => {
 app.put('/updateinvoice', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const { employee_id, last_invoice_id } = req.body
 
         connection.query('UPDATE employee SET last_invoice_id = ? WHERE id = ?', [last_invoice_id, employee_id], (err, rows) => {
@@ -239,8 +234,7 @@ app.put('/updateinvoice', (req, res) => {
 app.get('/branch/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT branch_name FROM branch WHERE id = ?', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -263,8 +257,7 @@ app.get('/branch/:id', (req, res) => {
 app.get('/dashboard/total/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT count(*) as total FROM bills WHERE employee_id = ?', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -281,8 +274,7 @@ app.get('/dashboard/total/:id', (req, res) => {
 app.get('/dashboard/month/:id/:month', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT id FROM bills WHERE employee_id = ? AND MONTH(bill_date) = ?', [req.params.id, req.params.month], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -300,8 +292,7 @@ app.get('/dashboard/month/:id/:month', (req, res) => {
 app.get('/dashboard/today/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT id FROM bills WHERE employee_id = ? AND DATE(bill_date) = CURDATE()', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -320,8 +311,7 @@ app.get('/dashboard/today/:id', (req, res) => {
 app.put('/paymentstatus/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('UPDATE bills SET payment_status = ? WHERE id = ?', 
                         [req.body.pay_status, req.params.id],
                         (err, rows) => {
@@ -341,8 +331,7 @@ app.put('/paymentstatus/:id', (req, res) => {
 app.get('/lastservices/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT customer_name, customer_phoneno, invoice_id ,bill_date FROM bills WHERE (employee_id = ? AND bill_date BETWEEN NOW() - INTERVAL 30 DAY AND NOW() ) ORDER BY id DESC', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -359,8 +348,7 @@ app.get('/lastservices/:id', (req, res) => {
 app.post('/getbillsrange/:userid', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         console.log(req.body)
         
         connection.query('SELECT * FROM bills WHERE employee_id = ? AND ( bill_date >= ? AND bill_date <= ?)', 
@@ -382,8 +370,7 @@ app.post('/getbillsrange/:userid', (req, res) => {
 app.post('/getbill/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         console.log(req.body)
 
         if(req.body.search != '')
@@ -417,8 +404,7 @@ app.post('/getbill/:id', (req, res) => {
 app.get('/getsersign/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         console.log('s_sign called')
         connection.query('SELECT s_sign FROM bills WHERE id = ?', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
@@ -439,8 +425,7 @@ app.get('/getsersign/:id', (req, res) => {
 app.get('/getcussign/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         console.log('c_sign called')
         connection.query('SELECT c_sign FROM bills WHERE id = ?', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
@@ -459,8 +444,7 @@ app.get('/getcussign/:id', (req, res) => {
 app.get('/getmachinedetails/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT * FROM machine WHERE bill_id = ?', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -478,8 +462,7 @@ app.get('/getmachinedetails/:id', (req, res) => {
 app.get('/mycreditbills/:userid', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const payment_status = 'PENDING'
 
         connection.query('SELECT * FROM bills WHERE employee_id = ? AND payment_status = ?', [req.params.userid, payment_status], (err, rows) => {
@@ -499,8 +482,7 @@ app.get('/mycreditbills/:userid', (req, res) => {
 app.post('/weblogin', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const { username, password } = req.body
 
         connection.query('SELECT * FROM admin_table WHERE username = ? AND password = ?', [username, password], (err, rows) => {
@@ -590,8 +572,7 @@ app.post('/addbranch',(req, res)=>{
 app.get('/getmanagers/:adminid', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query(`SELECT admin_table.*, branch.branch_name FROM admin_table JOIN branch ON branch.id = admin_table.branch_id AND admin_table.id <> ?`, [req.params.adminid], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -610,8 +591,7 @@ app.get('/getmanagers/:adminid', (req, res) => {
 app.get('/allbranchs', (req, res) => {
     pool.getConnection((err, connection) => {
         if(!err){
-            console.log(`connected ${connection.threadId}`)
-
+            
             connection.query('SELECT * FROM branch', (err, rows) => {
                 connection.release()    //return the connection to the pool
 
@@ -637,8 +617,7 @@ app.get('/allbranchs', (req, res) => {
 app.put('/updatemanager', (req, res) => {
     pool.getConnection((err, connection) => {
         if(!err){
-            console.log(`connected ${connection.threadId}`)
-
+            
             const data = req.body.currentMng
 
             connection.query('UPDATE admin_table SET name = ?, username= ?, password=?  WHERE id = ?', 
@@ -664,8 +643,7 @@ app.put('/updatemanager', (req, res) => {
 app.delete('/delmanager/:managerid', (req, res) => {
     pool.getConnection((err, connection) => {
         if(!err){
-            console.log(`connected ${connection.threadId}`)
-
+            
             connection.query('DELETE FROM admin_table WHERE id = ?', [req.params.managerid], (err, rows) => {
                 connection.release()    //return the connection to the pool
 
@@ -690,8 +668,7 @@ app.delete('/delmanager/:managerid', (req, res) => {
 app.get('/totalbillscount/:branchid', (req, res) => {
     pool.getConnection((err, connection) => {
         if(!err){
-            console.log(`connected ${connection.threadId}`)
-
+            
             connection.query(`SELECT count(*) as total_bills FROM bills JOIN employee ON employee.id = bills.employee_id 
                             AND employee.branch_id = ?`, [req.params.branchid], (err, rows) => {
                 connection.release()    //return the connection to the pool
@@ -715,8 +692,7 @@ app.get('/totalbillscount/:branchid', (req, res) => {
 app.get('/monthbillscount/:branchid/:month', (req, res) => {
     pool.getConnection((err, connection) => {
         if(!err){
-            console.log(`connected ${connection.threadId}`)
-
+            
             connection.query(`SELECT count(*) as month_bills FROM bills JOIN employee 
                             ON bills.employee_id = employee.id AND employee.branch_id = ? AND MONTH(bill_date) = ?`, 
                             [req.params.branchid, req.params.month], (err, rows) => {
@@ -741,8 +717,7 @@ app.get('/monthbillscount/:branchid/:month', (req, res) => {
 app.get('/todaybillscount/:branchid', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query(`SELECT count(*) as total FROM bills JOIN employee 
                     ON bills.employee_id = employee.id AND employee.branch_id = ? AND DATE(bill_date) = CURDATE()`, [req.params.branchid], (err, rows) => {
             connection.release()    //return the connection to the pool
@@ -762,8 +737,7 @@ app.get('/todaybillscount/:branchid', (req, res) => {
 app.post('/getbranchbills', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const params = req.body
 
         if(params.searchText != '' && params.date1 !=null && params.date2 != null){
@@ -824,8 +798,7 @@ app.post('/getbranchbills', (req, res) => {
 app.post('/allbills', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const params = req.body
 
         if(params.searchText != '' && (params.date1 !=null || params.date2 != null)){
@@ -909,8 +882,7 @@ app.post('/addemp',(req, res)=>{
 app.delete('/deleteemp/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('DELETE FROM employee WHERE id = ?', [req.params.id], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -929,8 +901,7 @@ app.delete('/deleteemp/:id', (req, res) => {
 app.get('/getemp/:branchid', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT * FROM employee WHERE branch_id = ?', [req.params.branchid], (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -948,8 +919,7 @@ app.get('/getemp/:branchid', (req, res) => {
 app.put('/updateemp', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         const data = req.body.currentEmp
 
         connection.query('UPDATE employee SET employee_name = ?, username= ?, password=?  WHERE id = ?', 
@@ -1012,8 +982,7 @@ app.get('/deleteimage/:key', async (req, res)=>{
 app.get('/getimage/ssign/:id', async (req, res)=>{
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT s_sign from bills WHERE id = ?', [req.params.id],
                         (err, rows) => {
             connection.release()    //return the connection to the pool
@@ -1031,8 +1000,7 @@ app.get('/getimage/ssign/:id', async (req, res)=>{
 app.get('/getimage/csign/:id', async (req, res)=>{
     pool.getConnection((err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         connection.query('SELECT c_sign from bills WHERE id = ?', [req.params.id],
                         (err, rows) => {
             connection.release()    //return the connection to the pool
@@ -1050,8 +1018,7 @@ app.get('/getimage/csign/:id', async (req, res)=>{
 app.post('/uploadimgs3', (req, res) => {
     pool.getConnection( async (err, connection) => {
         if(err) throw err;
-        console.log(`connected ${connection.threadId}`)
-
+        
         let s_sign_name = uuidv4()
         let c_sign_name = uuidv4()
 
