@@ -437,6 +437,7 @@ catch (error) {
 app.post('/getbill/:id', (req, res) => {
     try{
     pool.getConnection((err, connection) => {
+
         if(err) throw err;
         
         console.log(req.body)
@@ -1106,11 +1107,12 @@ app.post('/getbranchbills', (req, res) => {
         const params = req.body
         console.log(req.body)
         if(params.searchType != 'ALL'){
+            params.searchType = '%' + params.searchType + '%';
             if(params.searchText != '' && params.date1 !=null && params.date2 != null){
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?)) 
-                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)
+                                AND (bills.customer_name LIKE N? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)
                                 AND payment_status = ?`,
                                 [params.branch_id, params.date1, params.date2, params.searchText, params.searchText, params.searchText, params.searchType],
                                 (err, rows) => {
