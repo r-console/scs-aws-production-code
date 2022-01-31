@@ -51,6 +51,7 @@ const pool = mysql.createPool({
 
 // app login
 app.post('/login', (req, res) => {
+    try {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -80,10 +81,16 @@ app.post('/login', (req, res) => {
 
         console.log(req.body)
     })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
 })
 
 // add bill
 app.post('/addbill', (req, res) => {
+    try{
     pool.getConnection( async (err, connection) => {
         if(err) throw err;
         
@@ -149,10 +156,16 @@ app.post('/addbill', (req, res) => {
         }
 
     })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
 })
 
 // add multiple offline billdata
 app.post('/addofflinebill', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -209,10 +222,16 @@ app.post('/addofflinebill', (req, res) => {
         }
 
     })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
 })
 
 // update last invoice id
 app.put('/updateinvoice', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -229,10 +248,16 @@ app.put('/updateinvoice', (req, res) => {
             }
         })
     })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
 })
 
 // branch
 app.get('/branch/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -252,10 +277,16 @@ app.get('/branch/:id', (req, res) => {
             }
         })
     })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
 })
 
 // get employee bills data for dashboard
 app.get('/dashboard/total/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -270,9 +301,15 @@ app.get('/dashboard/total/:id', (req, res) => {
             }
         })
     })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
 })
 
 app.get('/dashboard/month/:id/:month', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -288,9 +325,15 @@ app.get('/dashboard/month/:id/:month', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 app.get('/dashboard/today/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -306,10 +349,16 @@ app.get('/dashboard/today/:id', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // update pending status
 app.put('/paymentstatus/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -326,10 +375,16 @@ app.put('/paymentstatus/:id', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get all records
 app.get('/lastservices/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -344,9 +399,15 @@ app.get('/lastservices/:id', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 app.post('/getbillsrange/:userid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -365,10 +426,16 @@ app.post('/getbillsrange/:userid', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get searched record from post method
 app.post('/getbill/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -399,10 +466,16 @@ app.post('/getbill/:id', (req, res) => {
             res.send({status:300})
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get blob file s_sign
 app.get('/getsersign/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -420,10 +493,16 @@ app.get('/getsersign/:id', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get blob file c_sign
 app.get('/getcussign/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -439,10 +518,16 @@ app.get('/getcussign/:id', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get machine derails
 app.get('/getmachinedetails/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -457,10 +542,16 @@ app.get('/getmachinedetails/:id', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get credit bills for employees
 app.get('/mycreditbills/:userid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -477,10 +568,16 @@ app.get('/mycreditbills/:userid', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // web login
 app.post('/weblogin', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -533,10 +630,16 @@ app.post('/weblogin', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // add branch manager
 app.post('/addmanager',(req, res)=>{
+    try{
     pool.getConnection((err,connection)=>{
         if(err)throw err;
         console.log(`connected as id ${connection.threadId}`)
@@ -553,10 +656,16 @@ app.post('/addmanager',(req, res)=>{
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // add branch
 app.post('/addbranch',(req, res)=>{
+    try{
     pool.getConnection((err,connection)=>{
         if(err)throw err;
         console.log(`connected as id ${connection.threadId}`)
@@ -573,9 +682,15 @@ app.post('/addbranch',(req, res)=>{
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 app.get('/getmanagers/:adminid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -591,10 +706,16 @@ app.get('/getmanagers/:adminid', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get all branches
 app.get('/allbranchs', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -618,10 +739,16 @@ app.get('/allbranchs', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // update branch name
 app.put('/updatebranch', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -645,10 +772,16 @@ app.put('/updatebranch', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // delete branch
 app.delete('/delbranch/:branchid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -668,9 +801,15 @@ app.delete('/delbranch/:branchid', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 app.delete('/delbill/:billid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             connection.query('SELECT * FROM bills WHERE id = ?', [req.params.billid], (err, bill) => {
@@ -709,9 +848,15 @@ app.delete('/delbill/:billid', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 app.put('/updatemanager', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -734,10 +879,16 @@ app.put('/updatemanager', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // delete manager
 app.delete('/delmanager/:managerid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -757,12 +908,18 @@ app.delete('/delmanager/:managerid', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 // admin section end
 
 // manager accounts section
 // dashboard box1
 app.get('/totalbillscount/:branchid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -783,10 +940,16 @@ app.get('/totalbillscount/:branchid', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // dashboard box2
 app.get('/monthbillscount/:branchid/:month', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -808,10 +971,16 @@ app.get('/monthbillscount/:branchid/:month', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // dashboard box3
 app.get('/totalpendingcount/:branchid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -833,10 +1002,16 @@ app.get('/totalpendingcount/:branchid', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // recieved
 app.get('/totalrecievedcount/:branchid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -858,10 +1033,16 @@ app.get('/totalrecievedcount/:branchid', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // completed
 app.get('/totalcompletedcount/:branchid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -883,10 +1064,16 @@ app.get('/totalcompletedcount/:branchid', (req, res) => {
             console.log('Database not connected')
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // dasdhboard box4
 app.get('/todaybillscount/:branchid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -903,10 +1090,16 @@ app.get('/todaybillscount/:branchid', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get bills by branch
 app.post('/getbranchbills', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1022,10 +1215,16 @@ app.post('/getbranchbills', (req, res) => {
             }
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get all bills admin account
 app.post('/allbills', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1141,10 +1340,16 @@ app.post('/allbills', (req, res) => {
             }
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // add employee
 app.post('/addemp',(req, res)=>{
+    try{
     pool.getConnection((err,connection)=>{
         if(err)throw err;
         console.log(`connected as id ${connection.threadId}`)
@@ -1162,10 +1367,16 @@ app.post('/addemp',(req, res)=>{
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // delete employee by id
 app.delete('/deleteemp/:id', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1181,10 +1392,16 @@ app.delete('/deleteemp/:id', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get employees by branch id
 app.get('/getemp/:branchid', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1199,10 +1416,16 @@ app.get('/getemp/:branchid', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // update employee details
 app.put('/updateemp', (req, res) => {
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1221,12 +1444,18 @@ app.put('/updateemp', (req, res) => {
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 // manager accounts section end
 
 // image
 // upload image to s3 bucket
 app.post('/images', upload.single('file'), async(req,res)=> {
+    try{
     // const file = req.params.file
     // console.log(file)
     // const result = await uploadFile(file)
@@ -1246,26 +1475,44 @@ app.post('/images', upload.single('file'), async(req,res)=> {
     else{
         res.send({msg:'Unable to upload image', status:300})
     }
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // get image from s3
 app.get('/images/:key', (req, res)=>{
+    try{
     const key = req.params.key
     const readStream = getFileStream(key)
     readStream.pipe(res)
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 // delete image in s3
 app.get('/deleteimage/:key', async (req, res)=>{
+    try{
     const key = req.params.key
     const result = await deleteFile(key)
     console.log(result)
     res.send(result)
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 
 // get image and upload to s3
 app.get('/getimage/ssign/:id', async (req, res)=>{
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1281,9 +1528,15 @@ app.get('/getimage/ssign/:id', async (req, res)=>{
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 app.get('/getimage/csign/:id', async (req, res)=>{
+    try{
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1299,9 +1552,15 @@ app.get('/getimage/csign/:id', async (req, res)=>{
             }
         })
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 app.post('/uploadimgs3', (req, res) => {
+    try{
     pool.getConnection( async (err, connection) => {
         if(err) throw err;
         
@@ -1330,6 +1589,11 @@ app.post('/uploadimgs3', (req, res) => {
             }
         }
     })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
 })
 
 const port = process.env.PORT || 9000
