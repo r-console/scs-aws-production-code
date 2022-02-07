@@ -51,6 +51,7 @@ const pool = mysql.createPool({
 // app login
 app.post('/login', (req, res) => {
     try {
+        console.log('/login url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -90,6 +91,7 @@ app.post('/login', (req, res) => {
 // add bill
 app.post('/addbill', (req, res) => {
     try{
+        console.log('/addbill url called')
     pool.getConnection( async (err, connection) => {
         if(err) throw err;
         
@@ -165,6 +167,7 @@ app.post('/addbill', (req, res) => {
 // add multiple offline billdata
 app.post('/addofflinebill', (req, res) => {
     try{
+        console.log('/addofflinebill url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -231,6 +234,7 @@ app.post('/addofflinebill', (req, res) => {
 // update last invoice id
 app.put('/updateinvoice', (req, res) => {
     try{
+    console.log('/updateinvoice url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -257,6 +261,7 @@ app.put('/updateinvoice', (req, res) => {
 // branch
 app.get('/branch/:id', (req, res) => {
     try{
+        console.log('/branch/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -286,6 +291,7 @@ app.get('/branch/:id', (req, res) => {
 // get employee bills data for dashboard
 app.get('/dashboard/total/:id', (req, res) => {
     try{
+        console.log('/dashboard/total/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -309,6 +315,7 @@ app.get('/dashboard/total/:id', (req, res) => {
 
 app.get('/dashboard/month/:id/:month', (req, res) => {
     try{
+        console.log('/dashboard/month/:id/:month url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -333,6 +340,7 @@ catch (error) {
 
 app.get('/dashboard/today/:id', (req, res) => {
     try{
+        console.log('/dashboard/today/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -358,6 +366,7 @@ catch (error) {
 // update pending status
 app.put('/paymentstatus/:id', (req, res) => {
     try{
+        console.log('/paymentstatus/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -384,6 +393,7 @@ catch (error) {
 // get all records
 app.get('/lastservices/:id', (req, res) => {
     try{
+        console.log('/lastservices/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -407,6 +417,7 @@ catch (error) {
 
 app.post('/getbillsrange/:userid', (req, res) => {
     try{
+        console.log('/getbillsrange/:userid url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -435,6 +446,7 @@ catch (error) {
 // get searched record from post method
 app.post('/getbill/:id', (req, res) => {
     try{
+        console.log('/getbill/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -475,6 +487,7 @@ catch (error) {
 // get blob file s_sign
 app.get('/getsersign/:id', (req, res) => {
     try{
+        console.log('/getsersign/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -502,6 +515,7 @@ catch (error) {
 // get blob file c_sign
 app.get('/getcussign/:id', (req, res) => {
     try{
+        console.log('/getcussign/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -527,6 +541,7 @@ catch (error) {
 // get machine derails
 app.get('/getmachinedetails/:id', (req, res) => {
     try{
+        console.log('/getmachinedetails/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -551,6 +566,7 @@ catch (error) {
 // get credit bills for employees
 app.get('/mycreditbills/:userid', (req, res) => {
     try{
+        console.log('/mycreditbills/:userid url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -577,6 +593,7 @@ catch (error) {
 // web login
 app.post('/weblogin', (req, res) => {
     try{
+        console.log('/weblogin url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -639,6 +656,7 @@ catch (error) {
 // add branch manager
 app.post('/addmanager',(req, res)=>{
     try{
+        console.log('/addmanager url called')
     pool.getConnection((err,connection)=>{
         if(err)throw err;
         console.log(`connected as id ${connection.threadId}`)
@@ -665,6 +683,7 @@ catch (error) {
 // add branch
 app.post('/addbranch',(req, res)=>{
     try{
+        console.log('/addbranch url called')
     pool.getConnection((err,connection)=>{
         if(err)throw err;
         console.log(`connected as id ${connection.threadId}`)
@@ -690,6 +709,7 @@ catch (error) {
 
 app.get('/getmanagers/:adminid', (req, res) => {
     try{
+        console.log('/getmanagers/:adminid url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -715,6 +735,7 @@ catch (error) {
 // get all branches
 app.get('/allbranchs', (req, res) => {
     try{
+        console.log('/allbranchs url called')
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -748,6 +769,7 @@ catch (error) {
 // update branch name
 app.put('/updatebranch', (req, res) => {
     try{
+        console.log('/updatebranch url called')
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -781,6 +803,7 @@ catch (error) {
 // delete branch
 app.delete('/delbranch/:branchid', (req, res) => {
     try{
+        console.log('/delbranch/:branchid url called')
     pool.getConnection((err, connection) => {
         if(!err){
             
@@ -809,6 +832,7 @@ catch (error) {
 
 app.delete('/delbill/:billid', (req, res) => {
     try{
+        console.log('/delbill/:billid url called')
     pool.getConnection((err, connection) => {
         if(!err){
             connection.query('SELECT * FROM bills WHERE id = ?', [req.params.billid], (err, bill) => {
@@ -1455,6 +1479,7 @@ catch (error) {
 // upload image to s3 bucket
 app.post('/images', upload.single('file'), async(req,res)=> {
     try{
+        console.log('/images post url called')
     // const file = req.params.file
     // console.log(file)
     // const result = await uploadFile(file)
@@ -1484,6 +1509,7 @@ catch (error) {
 // get image from s3
 app.get('/images/:key', (req, res)=>{
     try{
+        console.log('/images/:key get url called')
     const key = req.params.key
     const readStream = getFileStream(key)
     readStream.pipe(res)
@@ -1497,6 +1523,7 @@ catch (error) {
 // delete image in s3
 app.get('/deleteimage/:key', async (req, res)=>{
     try{
+        console.log('/deleteimage/:key url called')
     const key = req.params.key
     const result = await deleteFile(key)
     console.log(result)
@@ -1512,6 +1539,7 @@ catch (error) {
 // get image and upload to s3
 app.get('/getimage/ssign/:id', async (req, res)=>{
     try{
+        console.log('/getimage/ssign/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1536,6 +1564,7 @@ catch (error) {
 
 app.get('/getimage/csign/:id', async (req, res)=>{
     try{
+        console.log('/getimage/csign/:id url called')
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
@@ -1560,6 +1589,7 @@ catch (error) {
 
 app.post('/uploadimgs3', (req, res) => {
     try{
+        console.log('/uploadimgs3 url called')
     pool.getConnection( async (err, connection) => {
         if(err) throw err;
         
