@@ -1133,9 +1133,9 @@ app.post('/getbranchbills', (req, res) => {
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?)) 
-                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)
+                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ? OR employee.employee_name=?)
                                 AND payment_status = ?`,
-                                [params.branch_id, params.date1, params.date2, params.searchText, params.searchText, params.searchText, params.searchType],
+                                [params.branch_id, params.date1, params.date2, params.searchText, params.searchText, params.searchText, params.searchText, params.searchType,],
                                 (err, rows) => {
                     connection.release()    //return the connection to the pool
     
@@ -1168,9 +1168,9 @@ app.post('/getbranchbills', (req, res) => {
             else{
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
-                                AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? ))
+                                AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? OR employee.employee_name=?))
                                 AND payment_status = ?`,
-                            [params.branch_id, params.searchText, params.searchText, params.searchText, params.searchType], 
+                            [params.branch_id, params.searchText, params.searchText, params.searchText, params.searchText, params.searchType], 
                             (err, rows) => {
                     connection.release()    //return the connection to the pool
     
@@ -1189,8 +1189,8 @@ app.post('/getbranchbills', (req, res) => {
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?)) 
-                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)`,
-                                [params.branch_id, params.date1, params.date2, params.searchText, params.searchText, params.searchText],
+                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ? OR employee.employee_name=?)`,
+                                [params.branch_id, params.date1, params.date2, params.searchText, params.searchText, params.searchText, params.searchText],
                                 (err, rows) => {
                     connection.release()    //return the connection to the pool
     
@@ -1222,8 +1222,8 @@ app.post('/getbranchbills', (req, res) => {
             else{
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
-                                AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? ))`,
-                            [params.branch_id, params.searchText, params.searchText, params.searchText], 
+                                AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? OR employee.employee_name=?))`,
+                            [params.branch_id, params.searchText, params.searchText, params.searchText, params.searchText], 
                             (err, rows) => {
                     connection.release()    //return the connection to the pool
     
