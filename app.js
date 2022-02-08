@@ -572,8 +572,9 @@ app.get('/mycreditbills/:userid', (req, res) => {
         if(err) throw err;
         
         const payment_status = 'PENDING'
+        const payment_method = 'Credit'
 
-        connection.query('SELECT * FROM bills WHERE employee_id = ? AND payment_status = ?', [req.params.userid, payment_status], (err, rows) => {
+        connection.query('SELECT * FROM bills WHERE employee_id = ? AND payment_status = ? AND payment_method= ?', [req.params.userid, payment_status, payment_method], (err, rows) => {
             connection.release()    //return the connection to the pool
 
             if(!err){
