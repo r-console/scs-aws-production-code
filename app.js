@@ -111,6 +111,7 @@ app.post('/addbill', (req, res) => {
             if(result2 === 0){
                 params.Bill.s_sign = s_sign_name
                 params.Bill.c_sign = c_sign_name
+                params.Bill.payment_status = 'PENDING'
 
                 if(params.Bill.customer_phoneno == 0 || params.Bill.customer_phoneno == '0' || params.Bill.customer_phoneno == ''){
                     params.Bill.customer_phoneno = null;
