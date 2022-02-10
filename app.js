@@ -391,6 +391,32 @@ catch (error) {
 }
 })
 
+app.put('/billpayment/:id', (req, res) => {
+    try{
+        console.log('/billpayment/:id url called')
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        
+        connection.query('UPDATE bills SET payment_status = ?, paid_amount=?, discount_amount =? WHERE id = ?', 
+                        [req.body.pay_status, req.body.paid_amount, req.body.discount_amount, req.params.id],
+                        (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send({status:200})
+            }
+            else{
+                console.log(err)
+            }
+        })
+    })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
+})
+
 // get all records
 app.get('/lastservices/:id', (req, res) => {
     try{
