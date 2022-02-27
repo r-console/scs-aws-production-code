@@ -188,6 +188,7 @@ app.post('/addofflinebill', (req, res) => {
                 if(result2 === 0){
                     item.Bill.s_sign = s_sign_name
                     item.Bill.c_sign = c_sign_name
+                    item.Bill.payment_status = 'PENDING'
           
                     connection.query('INSERT INTO bills SET ?', item.Bill, (err, rows) => {
                         if(!err){
