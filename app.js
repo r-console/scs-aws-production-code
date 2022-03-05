@@ -399,8 +399,8 @@ app.put('/billpayment/:id', (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         
-        connection.query('UPDATE bills SET payment_status = ?, paid_amount=?, discount_amount =? WHERE id = ?', 
-                        [req.body.pay_status, req.body.paid_amount, req.body.discount_amount, req.params.id],
+        connection.query('UPDATE bills SET payment_status = ?, paid_amount=?, discount_amount =?, admin_message=? WHERE id = ?', 
+                        [req.body.pay_status, req.body.paid_amount, req.body.discount_amount, req.body.admin_message, req.params.id],
                         (err, rows) => {
             connection.release()    //return the connection to the pool
 
@@ -1164,7 +1164,8 @@ app.post('/getbranchbills', (req, res) => {
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?)) 
                                 AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ? OR employee.employee_name=?)
-                                AND payment_status = ?`,
+                                AND payment_status = ?
+                                ORDER by bills.bill_date DESC`,
                                 [params.branch_id, params.date1, params.date2, params.searchText, params.searchText, params.searchText, params.searchText, params.searchType,],
                                 (err, rows) => {
                     connection.release()    //return the connection to the pool
@@ -1181,7 +1182,8 @@ app.post('/getbranchbills', (req, res) => {
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?))
-                                AND payment_status = ?`,
+                                AND payment_status = ?
+                                ORDER by bills.bill_date DESC`,
                             [params.branch_id, params.date1, params.date2, params.searchType],
                             (err, rows) => {
                     connection.release()    //return the connection to the pool
@@ -1199,7 +1201,8 @@ app.post('/getbranchbills', (req, res) => {
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? OR employee.employee_name=?))
-                                AND payment_status = ?`,
+                                AND payment_status = ?
+                                ORDER by bills.bill_date DESC`,
                             [params.branch_id, params.searchText, params.searchText, params.searchText, params.searchText, params.searchType], 
                             (err, rows) => {
                     connection.release()    //return the connection to the pool
@@ -1219,7 +1222,8 @@ app.post('/getbranchbills', (req, res) => {
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?)) 
-                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ? OR employee.employee_name=?)`,
+                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ? OR employee.employee_name=?)
+                                ORDER by bills.bill_date DESC`,
                                 [params.branch_id, params.date1, params.date2, params.searchText, params.searchText, params.searchText, params.searchText],
                                 (err, rows) => {
                     connection.release()    //return the connection to the pool
@@ -1235,7 +1239,8 @@ app.post('/getbranchbills', (req, res) => {
             }else if(params.searchText == '' && params.date2 != null && params.date2 !=null){
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
-                                AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?))`,
+                                AND (employee.branch_id = ? AND (bills.bill_date >= ? AND bills.bill_date <= ?))
+                                ORDER by bills.bill_date DESC`,
                             [params.branch_id, params.date1, params.date2], 
                             (err, rows) => {
                     connection.release()    //return the connection to the pool
@@ -1252,7 +1257,8 @@ app.post('/getbranchbills', (req, res) => {
             else{
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
-                                AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? OR employee.employee_name=?))`,
+                                AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? OR employee.employee_name=?))
+                                ORDER by bills.bill_date DESC`,
                             [params.branch_id, params.searchText, params.searchText, params.searchText, params.searchText], 
                             (err, rows) => {
                     connection.release()    //return the connection to the pool
@@ -1646,6 +1652,182 @@ app.post('/uploadimgs3', (req, res) => {
                 })
                 res.send({s_sign_name:s_sign_name,c_sign_name:c_sign_name})
             }
+        }
+    })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
+})
+
+// 2022 march update
+app.post('/getempamounts/:id', (req, res) => {
+    try{
+        console.log('/getempamounts/:id url called')
+    pool.getConnection((err, connection) => {
+        if(!err){
+            console.log(req.body)
+            if(req.body.month != 'ALL'){
+                connection.query(`SELECT e.id as id,e.username,e.employee_name, SUM(b.s_charge) AS total_amount,
+                                SUM(b.paid_amount) AS paid, 
+                                SUM(b.discount_amount) AS discount,
+                                payment_status
+                                FROM bills b
+                                JOIN employee e ON b.employee_id = e.id AND e.branch_id = ? 
+                                AND YEAR(bill_date) = ? AND MONTH(bill_date) = ?
+                                GROUP BY employee_id,payment_status
+                                ORDER BY employee_id`, [req.params.id,req.body.year,req.body.month], (err, rows) => {
+                    connection.release()    //return the connection to the pool
+
+                    if(!err){
+                        if (rows.length != 0) {
+                            res.status(200).send({empbills:rows,status:200})
+                        }
+                        else{
+                            res.send({status:300})
+                        }
+                    }
+                    else{
+                        console.log(err)
+                    }
+                })
+            }else{
+                connection.query(`SELECT e.id as id,e.username,e.employee_name, SUM(b.s_charge) AS total_amount,
+                                SUM(b.paid_amount) AS paid, 
+                                SUM(b.discount_amount) AS discount,
+                                payment_status
+                                FROM bills b
+                                JOIN employee e ON b.employee_id = e.id AND e.branch_id = ?
+                                AND YEAR(bill_date) = ?
+                                GROUP BY employee_id,payment_status
+                                ORDER BY employee_id`, [req.params.id,req.body.year], (err, rows) => {
+                    connection.release()    //return the connection to the pool
+
+                    if(!err){
+                        if (rows.length != 0) {
+                            res.status(200).send({empbills:rows,status:200})
+                        }
+                        else{
+                            res.send({status:300})
+                        }
+                    }
+                    else{
+                        console.log(err)
+                    }
+                })
+            }
+        }else{
+            res.send({msg:'Database not connected',status:300})
+            console.log('Database not connected')
+        }
+    })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
+})
+
+// all bills group by employee
+app.post('/getallempamounts', (req, res) => {
+    try{
+        console.log('/getallempamounts url called')
+    pool.getConnection((err, connection) => {
+        if(!err){
+            console.log(req.body)
+            if(req.body.month != 'ALL'){
+                connection.query(`SELECT e.id as id,e.username,e.employee_name, SUM(b.s_charge) AS total_amount,
+                                SUM(b.paid_amount) AS paid, 
+                                SUM(b.discount_amount) AS discount,
+                                payment_status
+                                FROM bills b
+                                JOIN employee e ON b.employee_id = e.id
+                                AND YEAR(bill_date) = ? AND MONTH(bill_date) = ?
+                                GROUP BY employee_id,payment_status
+                                ORDER BY employee_id`, [req.body.year,req.body.month], (err, rows) => {
+                    connection.release()    //return the connection to the pool
+
+                    if(!err){
+                        if (rows.length != 0) {
+                            res.status(200).send({empbills:rows,status:200})
+                        }
+                        else{
+                            res.send({status:300})
+                        }
+                    }
+                    else{
+                        console.log(err)
+                    }
+                })
+            }else{
+                connection.query(`SELECT e.id as id,e.username,e.employee_name, SUM(b.s_charge) AS total_amount,
+                                SUM(b.paid_amount) AS paid, 
+                                SUM(b.discount_amount) AS discount,
+                                payment_status
+                                FROM bills b
+                                JOIN employee e ON b.employee_id = e.id
+                                AND YEAR(bill_date) = ?
+                                GROUP BY employee_id,payment_status
+                                ORDER BY employee_id`, [req.body.year], (err, rows) => {
+                    connection.release()    //return the connection to the pool
+
+                    if(!err){
+                        if (rows.length != 0) {
+                            res.status(200).send({empbills:rows,status:200})
+                        }
+                        else{
+                            res.send({status:300})
+                        }
+                    }
+                    else{
+                        console.log(err)
+                    }
+                })
+            }
+        }else{
+            res.send({msg:'Database not connected',status:300})
+            console.log('Database not connected')
+        }
+    })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
+})
+
+app.post('/getadminbill', (req, res) => {
+    try{
+        console.log('/getadminbill url called')
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        
+        console.log(req.body)
+
+        if(req.body.search != '')
+        {
+            connection.query(`SELECT * FROM bills WHERE invoice_id = ?`, 
+                            [req.body.search], (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                console.log(rows)
+                if (rows.length != 0) {
+                    res.send(rows[0])
+                }
+                else{
+                    res.send({status:300})
+                }
+            }
+            else{
+                console.log(err)
+                res.send({status:300})
+            }
+        })
+        }
+        else{
+            res.send({status:300})
         }
     })
 }
