@@ -483,23 +483,52 @@ app.post('/getbill/:id', (req, res) => {
 
         if(req.body.search != '')
         {
-            connection.query(`SELECT * FROM bills WHERE (customer_phoneno = ? OR invoice_id = ? OR customer_name= ?)  AND employee_id = ?`, 
-                            [req.body.search,req.body.search,req.body.search,req.params.id], (err, rows) => {
-            connection.release()    //return the connection to the pool
+            connection.query(`SELECT * FROM employee WHERE id = ?`, 
+                            [req.params.id], (err, rowdata) => {
+                                console.log(rowdata[0].branch_id)
+                if(rowdata[0].employee_name == "HO" || rowdata[0].employee_name == "BO"){
+                    connection.query(`SELECT b.*,e.branch_id,e.employee_name FROM bills b
+                                    JOIN employee e ON b.employee_id = e.id
+                                    WHERE b.invoice_id = ? AND e.branch_id = ?`, 
+                                    [req.body.search, rowdata[0].branch_id], (err, rows) => {
+                    connection.release()    //return the connection to the pool
 
-            if(!err){
-                console.log(rows)
-                if (rows.length != 0) {
-                    res.send(rows[0])
+                        if(!err){
+                            console.log('first box')
+                            console.log(rows)
+                            if (rows.length != 0) {
+                                res.send(rows[0])
+                            }
+                            else{
+                                res.send({status:300})
+                            }
+                        }
+                        else{
+                            console.log(err)
+                            res.send({status:300})
+                        }
+                    })
                 }
                 else{
-                    res.send({status:300})
+                    connection.query(`SELECT * FROM bills WHERE (customer_phoneno = ? OR invoice_id = ? OR customer_name= ?)  AND employee_id = ?`, 
+                                    [req.body.search,req.body.search,req.body.search,req.params.id], (err, rows) => {
+                    connection.release()    //return the connection to the pool
+
+                        if(!err){
+                            console.log(rows)
+                            if (rows.length != 0) {
+                                res.send(rows[0])
+                            }
+                            else{
+                                res.send({status:300})
+                            }
+                        }
+                        else{
+                            console.log(err)
+                            res.send({status:300})
+                        }
+                    })
                 }
-            }
-            else{
-                console.log(err)
-                res.send({status:300})
-            }
         })
         }
         else{
@@ -1291,6 +1320,8 @@ app.post('/allbills', (req, res) => {
 
         if(params.searchType !='ALL'){
             if(params.searchText != '' && (params.date1 !=null || params.date2 != null)){
+                console.log('first called')
+                console.log(params.date1, params.date2, params.searchText, params.searchText, params.searchText,params.searchType)
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (bills.bill_date >= ? AND bills.bill_date <= ?)
@@ -1309,6 +1340,7 @@ app.post('/allbills', (req, res) => {
                     }
                 })
             }else if(params.searchText == '' && (params.date2 != null || params.date2 !=null)){
+                console.log('second called')
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND bills.bill_date >= ? AND bills.bill_date <= ?
@@ -1327,6 +1359,7 @@ app.post('/allbills', (req, res) => {
                 })
             }
             else{
+                console.log('third called')
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? )
@@ -1346,7 +1379,8 @@ app.post('/allbills', (req, res) => {
             }
         }
         else{
-            if(params.searchText != '' && (params.date1 !=null || params.date2 != null)){
+                console.log('fourth called')
+                if(params.searchText != '' && (params.date1 !=null || params.date2 != null)){
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (bills.bill_date >= ? AND bills.bill_date <= ?)
@@ -1364,6 +1398,7 @@ app.post('/allbills', (req, res) => {
                     }
                 })
             }else if(params.searchText == '' && (params.date2 != null || params.date2 !=null)){
+                console.log('fifth called')
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND bills.bill_date >= ? AND bills.bill_date <= ?`,
@@ -1381,6 +1416,7 @@ app.post('/allbills', (req, res) => {
                 })
             }
             else{
+                console.log('sixth called')
                 connection.query(`SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? )`,
@@ -1829,6 +1865,32 @@ app.post('/getadminbill', (req, res) => {
         else{
             res.send({status:300})
         }
+    })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
+})
+
+// version check
+app.get('/versioncheck', (req, res) => {
+    try{
+        console.log('/versioncheck url called')
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        
+        connection.query(`SELECT * FROM app_version`, (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.status(200).send({version:rows[0],status:200})
+            }
+            else{
+                console.log(err)
+                res.send({status:300})
+            }
+        })
     })
 }
 catch (error) {
