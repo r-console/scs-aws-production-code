@@ -1097,7 +1097,7 @@ app.get('/totalrecievedcount/:branchid', (req, res) => {
     pool.getConnection((err, connection) => {
         if(!err){
             
-            let rec = "RECIEVED";
+            let rec = "RECEIVED";
             connection.query(`SELECT count(*) as total_bills FROM bills JOIN employee ON employee.id = bills.employee_id 
                             AND employee.branch_id = ? AND bills.payment_status = ?`, [req.params.branchid,rec], (err, rows) => {
                 connection.release()    //return the connection to the pool
