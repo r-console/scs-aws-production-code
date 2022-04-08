@@ -28,6 +28,7 @@ const pool = mysql.createPool({
     user:'scs2021admin',
     password:'nodejs#$#878',
     database:'scsappdbservices'
+    
     // host:'localhost',
     // user:'root',
     // password:'',
