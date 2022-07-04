@@ -29,6 +29,7 @@ const pool = mysql.createPool({
     password:'nodejs#$#878',
     database:'scsappdbservices'
     
+    
     // host:'localhost',
     // user:'root',
     // password:'',
