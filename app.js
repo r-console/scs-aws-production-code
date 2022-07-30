@@ -18,8 +18,8 @@ const app = express()
 app.use(morgan('dev'))
 app.use(cors())
 
-app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }))
-app.use(bodyParser.json({ limit: '10mb' }))
+app.use(bodyParser.urlencoded({ extended: false, limit: '30mb' }))
+app.use(bodyParser.json({ limit: '30mb' }))
 
 // MySQL
 const pool = mysql.createPool({
