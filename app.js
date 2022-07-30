@@ -27,8 +27,7 @@ const pool = mysql.createPool({
     host:'scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com',
     user:'scs2021admin',
     password:'nodejs#$#878',
-    database:'scsappdbservices'
-    
+    database:'scsappdbservices'    
     
     // host:'localhost',
     // user:'root',
