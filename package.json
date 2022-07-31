@@ -4,7 +4,7 @@
   "description": "scs-backend api with mysql database",
   "main": "app.js",
   "scripts": {
-    "start": "pm2 start app.js",
+    "start": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
