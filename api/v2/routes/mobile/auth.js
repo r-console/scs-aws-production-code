@@ -1,13 +1,18 @@
 const express = require('express');
 const router = express.Router();
-
-// const mysql = require('mysql')
-
+const { Console } = require('console');
+const fs = require("fs");
 const pool = require('../../mysqlConfig');
+
+// const myLogger = new Console({
+//     stdout: fs.createWriteStream("access.txt"),
+//     stderr: fs.createWriteStream("errors.txt"),
+// });
 
 router.post('/login', (req, res, next) => {
     try{
-        console.log(`/login ${req.body}`)
+        console.log(`mobile /login ${req.body}`)
+        myLogger.log(`mobile /login ${req.body}`);
         pool.getConnection((err, connection) => {
             if(err) throw err;
             
@@ -26,7 +31,8 @@ router.post('/login', (req, res, next) => {
                         }
                         res.status(200).send({userData:userData,status:200})
                     }else{
-                        console.log('Nothing match');
+                        console.log('user not found');
+                        myLogger.error("mobile /login user not found");
                         res.status(300).send({status:300})
                     }
                 }
@@ -38,35 +44,15 @@ router.post('/login', (req, res, next) => {
         })
     }
     catch (error) {
+        myLogger.error("mobile /login catch error");
         console.log(error)
         res.status(500).send({status:300})
     }
 });
 
-function calculateFibonacciValue(number) {
-    var s = 0;
-    var returnValue;
-
-    if (number == 0) {
-        return (s);
-    }
-    if (number == 1) {
-        s += 1;
-        return (s);
-    }
-    else {
-        return (calculateFibonacciValue(number - 1) + calculateFibonacciValue(number - 2));
-    }
-}
-
-router.post('/err/:id', (req, res, next) => {
-    let n = req.params.id
-    let a = calculateFibonacciValue(n)
-    res.send({val:a})
-})
-
-router.post('/hello', (req, res, next) => {
-    res.status(200).send({msg:'hello'})
+router.post('/test', (req, res, next) => {
+    console.log(req.body)
+    res.status(200).send({msg:200})
 })
 
 module.exports = router;
