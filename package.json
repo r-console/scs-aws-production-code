@@ -4,7 +4,7 @@
   "description": "scs-backend api with mysql database",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "pm2 start ecosystem.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -19,6 +19,7 @@
     "multer": "^1.4.4",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.15",
+    "pm2": "^5.2.0",
     "uuid": "^8.3.2"
   }
 }

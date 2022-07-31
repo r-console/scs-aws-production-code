@@ -202,6 +202,7 @@ app.post('/addofflinebill', (req, res) => {
                                     connection.query('INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?', 
                                     [item.machineDetails.map(item => [item.machineModel, item.partNo, ins_bill_id ])],
                                     (err, mrows) => {
+                                        connection.release()
                                         if(err){
                                             console.log(err)
                                             inserted = 1;
