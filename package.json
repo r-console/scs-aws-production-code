@@ -2,9 +2,9 @@
   "name": "scs-backend",
   "version": "1.0.0",
   "description": "scs-backend api with mysql database",
-  "main": "app.js",
+  "main": "ecosystem.config.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "pm2 start ecosystem.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
