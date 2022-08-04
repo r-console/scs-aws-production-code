@@ -14,12 +14,18 @@ const upload = multer({ dest: 'uploads/' })
 const { uploadFile, getFileStream, deleteFile, uploadBase64 } = require('./s3');
 const { param } = require('express/lib/request');
 
+// import version 2
+const version2 = require('./api/v2/app2');
+
 const app = express()
 app.use(morgan('dev'))
 app.use(cors())
 
 app.use(bodyParser.urlencoded({ extended: false, limit: '30mb' }))
 app.use(bodyParser.json({ limit: '30mb' }))
+
+// version 2 codes
+app.use('/v2', version2);
 
 // MySQL
 const pool = mysql.createPool({
@@ -32,7 +38,7 @@ const pool = mysql.createPool({
     
     // host:'localhost',
     // user:'root',
-    // password:'',
+    // password:'root',
     // database:'SCSbilling'
 
     // username and password

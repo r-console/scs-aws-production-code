@@ -1,25 +1,30 @@
 const express = require('express');
 const router = express.Router();
+const { Console } = require('console');
+const fs = require("fs");
 const pool = require('../../mysqlConfig');
 
-// get credit bills for employees
-router.get('/mycreditbills/:userid', (req, res) => {
+// const myLogger = new Console({
+//     stdout: fs.createWriteStream("access.txt"),
+//     stderr: fs.createWriteStream("errors.txt"),
+// });
+
+// version check
+router.get('/versioncheck', (req, res) => {
     try{
-        console.log('/mycreditbills/:userid url called')
+        console.log('/versioncheck url called')
         pool.getConnection((err, connection) => {
             if(err) throw err;
             
-            const payment_status = 'PENDING'
-            const payment_method = 'Credit'
-
-            connection.query('SELECT * FROM bills WHERE employee_id = ? AND payment_status = ? AND payment_method= ?', [req.params.userid, payment_status, payment_method], (err, rows) => {
+            connection.query(`SELECT * FROM app_version`, (err, rows) => {
                 connection.release()    //return the connection to the pool
 
                 if(!err){
-                    res.send(rows)
+                    res.status(200).send({version:rows[0],status:200})
                 }
                 else{
                     console.log(err)
+                    res.send({status:300})
                 }
             })
         })
