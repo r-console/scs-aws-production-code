@@ -267,4 +267,28 @@ catch (error) {
 }
 })
 
+router.get('/getmachinedetails/:id', (req, res) => {
+    try{
+        console.log('/getmachinedetails/:id url called')
+        pool.getConnection((err, connection) => {
+            if(err) throw err;
+            
+            connection.query('SELECT * FROM machine WHERE bill_id = ?', [req.params.id], (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send(rows)
+                }
+                else{
+                    console.log(err)
+                }
+            })
+        })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
+});
+
 module.exports = router;

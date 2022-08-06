@@ -13,9 +13,11 @@ const authRoutes = require('./routes/mobile/auth');
 const billRoutes = require('./routes/mobile/bill');
 const creditBillRoutes = require('./routes/mobile/creditBills');
 const dashboardRoutes = require('./routes/mobile/dashboard');
-const S3UploadRoutes = require('./routes/mobile/s3uploads');
 const searchdRoutes = require('./routes/mobile/search');
 const versionRoutes = require('./routes/mobile/version');
+
+// common
+const S3UploadRoutes = require('./routes/common/s3uploads');
 
 // desktop routes
 const deskBranch = require('./routes/desktop/branch');
@@ -34,12 +36,14 @@ app.use('/creditBill', creditBillRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/search', searchdRoutes);
 app.use('/version', versionRoutes);
+
+// common
 app.use('/s3image', S3UploadRoutes)
 
 // desktop
+app.use('/deskauth', deskAuth)
 app.use('/deskbranch', deskBranch)
 app.use('/deskdashboard', deskDashboard)
-app.use('/deskauth', deskAuth)
 app.use('/deskbill', deskBill)
 app.use('/desksearch', deskSearch)
 app.use('/deskemployee', deskEmployee)

@@ -31,31 +31,6 @@ router.post('/addemp',(req, res)=>{
     }
 })
 
-// delete employee by id
-router.delete('/deleteemp/:id', (req, res) => {
-    try{
-        pool.getConnection((err, connection) => {
-            if(err) throw err;
-            
-            connection.query('DELETE FROM employee WHERE id = ?', [req.params.id], (err, rows) => {
-                connection.release()    //return the connection to the pool
-
-                if(!err){
-                    res.send({status:200})
-                }
-                else{
-                    console.log(err)
-                    res.send({status:300})
-                }
-            })
-        })
-    }
-    catch (error) {
-        console.log(error)
-        res.status(500).send({status:300})
-    }
-})
-
 // get employees by branch id
 router.get('/getemp/:branchid', (req, res) => {
     try{
@@ -98,6 +73,31 @@ router.put('/updateemp', (req, res) => {
                 }
                 else{
                     console.log(err)
+                }
+            })
+        })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
+})
+
+// delete employee by id
+router.delete('/deleteemp/:id', (req, res) => {
+    try{
+        pool.getConnection((err, connection) => {
+            if(err) throw err;
+            
+            connection.query('DELETE FROM employee WHERE id = ?', [req.params.id], (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send({status:200})
+                }
+                else{
+                    console.log(err)
+                    res.send({status:300})
                 }
             })
         })

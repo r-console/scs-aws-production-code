@@ -52,22 +52,6 @@ router.get('/images/:key', (req, res)=>{
     }
 })
 
-// delete image in s3
-router.get('/deleteimage/:key', async (req, res)=>{
-    try{
-        console.log('/deleteimage/:key url called')
-        const key = req.params.key
-        const result = await deleteFile(key)
-        console.log(result)
-        res.send(result)
-    }
-    catch (error) {
-        console.log(error)
-        res.status(500).send({status:300})
-    }
-})
-
-
 // get image and upload to s3
 router.get('/getimage/ssign/:id', async (req, res)=>{
     try{
@@ -149,6 +133,77 @@ router.post('/uploadimgs3', (req, res) => {
                     res.send({s_sign_name:s_sign_name,c_sign_name:c_sign_name})
                 }
             }
+        })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
+})
+
+// this is for both mobile and desk app
+// delete image in s3
+router.get('/deleteimage/:key', async (req, res)=>{
+    try{
+        console.log('/deleteimage/:key url called')
+        const key = req.params.key
+        const result = await deleteFile(key)
+        console.log(result)
+        res.send(result)
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
+})
+
+// desk app api
+router.get('/getsersign/:id', (req, res) => {
+    try{
+        console.log('/getsersign/:id url called')
+        pool.getConnection((err, connection) => {
+            if(err) throw err;
+            
+            console.log('s_sign called')
+            connection.query('SELECT s_sign FROM bills WHERE id = ?', [req.params.id], (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    console.log('s_sign work fine')
+                    res.send(rows[0].s_sign)
+                }
+                else{
+                    console.log('s_sign error')
+                    console.log(err)
+                }
+            })
+        })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send({status:300})
+    }
+})
+
+// desk app api
+// get blob file c_sign
+router.get('/getcussign/:id', (req, res) => {
+    try{
+        console.log('/getcussign/:id url called')
+        pool.getConnection((err, connection) => {
+            if(err) throw err;
+            
+            console.log('c_sign called')
+            connection.query('SELECT c_sign FROM bills WHERE id = ?', [req.params.id], (err, rows) => {
+                connection.release()    //return the connection to the pool
+
+                if(!err){
+                    res.send(rows[0].c_sign)
+                }
+                else{
+                    console.log(err)
+                }
+            })
         })
     }
     catch (error) {

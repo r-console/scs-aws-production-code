@@ -21,8 +21,8 @@ const app = express()
 app.use(morgan('dev'))
 app.use(cors())
 
-app.use(bodyParser.urlencoded({ extended: false, limit: '30mb' }))
-app.use(bodyParser.json({ limit: '30mb' }))
+app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }))
+app.use(bodyParser.json({ limit: '50mb' }))
 
 // version 2 codes
 app.use('/v2', version2);

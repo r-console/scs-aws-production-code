@@ -31,6 +31,32 @@ router.post('/addmanager',(req, res)=>{
     }
 })
 
+// get all managers for particular branch
+router.get('/getmanagers/:adminid', (req, res) => {
+    try{
+        console.log('/getmanagers/:adminid url called')
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        
+        connection.query(`SELECT admin_table.*, branch.branch_name FROM admin_table JOIN branch ON branch.id = admin_table.branch_id AND admin_table.id <> ?`, [req.params.adminid], (err, rows) => {
+            connection.release()    //return the connection to the pool
+
+            if(!err){
+                res.send({managers:rows,status:200})
+            }
+            else{
+                console.log(err)
+                res.send({status:300})
+            }
+        })
+    })
+}
+catch (error) {
+    console.log(error)
+    res.status(500).send({status:300})
+}
+})
+
 router.put('/updatemanager', (req, res) => {
     try{
     pool.getConnection((err, connection) => {
