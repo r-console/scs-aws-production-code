@@ -28,18 +28,18 @@ router.get('/total/:id', (req, res) => {
     }
 })
 
-router.get('/month/:id/:month', (req, res) => {
+router.get('/month/:id', (req, res) => {
     try{
         console.log('/month/:id/:month url called')
         pool.getConnection((err, connection) => {
             if(err) throw err;
             
-            connection.query('SELECT id FROM bills WHERE employee_id = ? AND MONTH(bill_date) = MONTH(CURDATE()) AND YEAR(bill_date) = YEAR(CURDATE())', [req.params.id, req.params.month], (err, rows) => {
+            connection.query('SELECT count(*) as tot FROM bills WHERE employee_id = ? AND MONTH(bill_date) = MONTH(CURDATE()) AND YEAR(bill_date) = YEAR(CURDATE())', [req.params.id], (err, rows) => {
                 connection.release()    //return the connection to the pool
 
                 if(!err){
-                    const total = rows.length;
-                    res.send({total:total})
+                    // const total = rows.length;
+                    res.send({total:rows[0].tot})
                 }
                 else{
                     console.log(err)
@@ -59,12 +59,12 @@ router.get('/today/:id', (req, res) => {
         pool.getConnection((err, connection) => {
             if(err) throw err;
             
-            connection.query('SELECT id FROM bills WHERE employee_id = ? AND DATE(bill_date) = CURDATE()', [req.params.id], (err, rows) => {
+            connection.query('SELECT count(*) as tot FROM bills WHERE employee_id = ? AND DATE(bill_date) = CURDATE()', [req.params.id], (err, rows) => {
                 connection.release()    //return the connection to the pool
 
                 if(!err){
-                    const total = rows.length;
-                    res.send({total:total})
+                    // const total = rows.length;
+                    res.send({total:rows[0].tot})
                 }
                 else{
                     console.log(err)
