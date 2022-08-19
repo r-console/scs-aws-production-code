@@ -1,16 +1,16 @@
-const mysql = require('mysql')
+const mysql = require("mysql")
 
 const pool = mysql.createPool({
-    connectionLimit: 100,
-    host:'scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com',
-    user:'scs2021admin',
-    password:'nodejs#$#878',
-    database:'scsappdbservices'
+  connectionLimit: 100,
+  host: "scs-appservice-database.cuies1xmg40c.ap-south-1.rds.amazonaws.com",
+  user: "scs2021admin",
+  password: "nodejs#$#878",
+  database: "scsappdbservices",
 
-    // host:'localhost',
-    // user:'root',
-    // password:'root',
-    // database:'SCSbilling'
+  // host: "localhost",
+  // user: "root",
+  // password: "root",
+  // database: "SCSbilling",
 })
 
-module.exports = pool;
+module.exports = pool
