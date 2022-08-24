@@ -1,6 +1,6 @@
 {
   "name": "scs-backend",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "scs-backend api with mysql database",
   "main": "app.js",
   "scripts": {

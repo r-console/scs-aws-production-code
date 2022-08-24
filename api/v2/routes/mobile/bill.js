@@ -60,6 +60,7 @@ router.post("/addbill", (req, res, next) => {
               const insert_id = rows.insertId
 
               if (!err) {
+                // add bill locations
                 connection.query(
                   "UPDATE employee SET last_invoice_id = ? WHERE id = ?",
                   [params.last_invoice_id, params.Bill.employee_id],
@@ -75,20 +76,55 @@ router.post("/addbill", (req, res, next) => {
                           ]),
                         ],
                         (err, mrows) => {
-                          connection.release() //return the connection to the pool
-
                           if (!err) {
-                            res.send({
-                              message:
-                                "Successfully inserted bill details and machine details",
-                              status: 200,
-                            })
+                            if (req.body.bill_location) {
+                              const { bill_location } = req.body
+                              const loc_data = {
+                                lat: bill_location.latitude,
+                                lng: bill_location.longitude,
+                                bill_id: insert_id,
+                                emp_id: params.Bill.employee_id,
+                              }
+                              connection.query(
+                                "INSERT INTO billing_locations SET ?",
+                                loc_data,
+                                (err, loc) => {
+                                  if (!err) {
+                                    connection.release() //return the connection to the pool
+                                    console.log(
+                                      `locations inserted bill id -${insert_id}`
+                                    )
+                                    res.send({
+                                      message:
+                                        "Successfully inserted bill details and machine details",
+                                      status: 200,
+                                    })
+                                  } else {
+                                    console.log(err)
+                                    res.send({
+                                      message: "some error",
+                                      status: 500,
+                                    })
+                                  }
+                                }
+                              )
+                            } else {
+                              connection.release() //return the connection to the pool
+                              res.send({
+                                message:
+                                  "Successfully inserted bill details and machine details",
+                                status: 200,
+                              })
+                            }
                           } else {
                             console.log(err)
                             res.send({ message: "some error", status: 500 })
                           }
                         }
                       )
+                    } else {
+                      console.log(err)
+                      res.send({ message: "some error", status: 500 })
                     }
                   }
                 )
@@ -161,10 +197,48 @@ router.post("/addofflinebill", (req, res, next) => {
                               ins_bill_id,
                             ]),
                           ],
-                          (err, mrows) => {
-                            if (err) {
-                              console.log(err)
-                              inserted = 1
+                          (errr, mrows) => {
+                            if (!errr) {
+                              if (req.body.bill_location) {
+                                const { bill_location } = req.body
+                                const loc_data = {
+                                  lat: bill_location.latitude,
+                                  lng: bill_location.longitude,
+                                  bill_id: insert_id,
+                                  emp_id: params.Bill.employee_id,
+                                }
+                                connection.query(
+                                  "INSERT INTO billing_locations SET ?",
+                                  loc_data,
+                                  (err, loc) => {
+                                    if (!err) {
+                                      connection.release() //return the connection to the pool
+                                      console.log(
+                                        `locations inserted bill id -${insert_id}`
+                                      )
+                                      res.send({
+                                        message:
+                                          "Successfully inserted bill details and machine details",
+                                        status: 200,
+                                      })
+                                    } else {
+                                      console.log(err)
+                                      res.send({
+                                        message: "some error",
+                                        status: 500,
+                                      })
+                                    }
+                                  }
+                                )
+                              } else {
+                                //else need to remove after app update with location
+                                connection.release() //return the connection to the pool
+                                res.send({
+                                  message:
+                                    "Successfully inserted bill details and machine details",
+                                  status: 200,
+                                })
+                              }
                             }
                           }
                         )
