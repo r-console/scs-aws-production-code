@@ -90,15 +90,35 @@ router.post("/addbill", (req, res, next) => {
                                 loc_data,
                                 (err, loc) => {
                                   if (!err) {
-                                    connection.release() //return the connection to the pool
-                                    console.log(
-                                      `locations inserted bill id -${insert_id}`
-                                    )
-                                    res.send({
-                                      message:
-                                        "Successfully inserted bill details and machine details",
-                                      status: 200,
-                                    })
+                                    if (
+                                      item.Bill.pending_reason ==
+                                      "Calls Pending"
+                                    ) {
+                                      const pend = {
+                                        bill_id: insert_id,
+                                        status: "pending",
+                                      }
+                                      connection.query(
+                                        "INSERT INTO callspending_update SET ?",
+                                        pend,
+                                        (finerr, fin) => {
+                                          if (!finerr) {
+                                            connection.release() //return the connection to the pool
+                                            res.send({
+                                              message:
+                                                "Successfully inserted bill details and machine details",
+                                              status: 200,
+                                            })
+                                          } else {
+                                            console.log(err)
+                                            res.send({
+                                              message: "some error",
+                                              status: 500,
+                                            })
+                                          }
+                                        }
+                                      )
+                                    }
                                   } else {
                                     console.log(err)
                                     res.send({
@@ -212,15 +232,35 @@ router.post("/addofflinebill", (req, res, next) => {
                                   loc_data,
                                   (err, loc) => {
                                     if (!err) {
-                                      connection.release() //return the connection to the pool
-                                      console.log(
-                                        `locations inserted bill id -${insert_id}`
-                                      )
-                                      res.send({
-                                        message:
-                                          "Successfully inserted bill details and machine details",
-                                        status: 200,
-                                      })
+                                      if (
+                                        item.Bill.pending_reason ==
+                                        "Calls Pending"
+                                      ) {
+                                        const pend = {
+                                          bill_id: insert_id,
+                                          status: "pending",
+                                        }
+                                        connection.query(
+                                          "INSERT INTO callspending_update SET ?",
+                                          pend,
+                                          (finerr, fin) => {
+                                            if (!finerr) {
+                                              connection.release() //return the connection to the pool
+                                              res.send({
+                                                message:
+                                                  "Successfully inserted bill details and machine details",
+                                                status: 200,
+                                              })
+                                            } else {
+                                              console.log(err)
+                                              res.send({
+                                                message: "some error",
+                                                status: 500,
+                                              })
+                                            }
+                                          }
+                                        )
+                                      }
                                     } else {
                                       console.log(err)
                                       res.send({
