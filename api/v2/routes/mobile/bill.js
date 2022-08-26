@@ -208,7 +208,8 @@ router.post("/addofflinebill", (req, res, next) => {
               (err, rows) => {
                 if (!err) {
                   let iv_id = item.last_invoice_id
-                  let ins_bill_id = rows.insertId
+
+                  const insert_id = rows.insertId
 
                   connection.query(
                     "UPDATE employee SET last_invoice_id = ? WHERE id = ?",
@@ -221,7 +222,7 @@ router.post("/addofflinebill", (req, res, next) => {
                             item.machineDetails.map((item) => [
                               item.machineModel,
                               item.partNo,
-                              ins_bill_id,
+                              insert_id,
                             ]),
                           ],
                           (errr, mrows) => {
