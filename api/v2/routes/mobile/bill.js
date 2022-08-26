@@ -118,6 +118,13 @@ router.post("/addbill", (req, res, next) => {
                                           }
                                         }
                                       )
+                                    } else {
+                                      connection.release()
+                                      res.send({
+                                        message:
+                                          "Successfully inserted bill details and machine details",
+                                        status: 200,
+                                      })
                                     }
                                   } else {
                                     console.log(err)
@@ -260,6 +267,13 @@ router.post("/addofflinebill", (req, res, next) => {
                                             }
                                           }
                                         )
+                                      } else {
+                                        connection.release() //return the connection to the pool
+                                        res.send({
+                                          message:
+                                            "Successfully inserted bill details and machine details",
+                                          status: 200,
+                                        })
                                       }
                                     } else {
                                       console.log(err)
