@@ -91,7 +91,7 @@ router.post("/addbill", (req, res, next) => {
                                 (err, loc) => {
                                   if (!err) {
                                     if (
-                                      item.Bill.pending_reason ==
+                                      item.Bill.payment_method ===
                                       "Calls Pending"
                                     ) {
                                       const pend = {
@@ -240,7 +240,7 @@ router.post("/addofflinebill", (req, res, next) => {
                                   (err, loc) => {
                                     if (!err) {
                                       if (
-                                        item.Bill.pending_reason ==
+                                        item.Bill.payment_method ===
                                         "Calls Pending"
                                       ) {
                                         const pend = {
