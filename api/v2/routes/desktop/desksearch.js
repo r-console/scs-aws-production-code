@@ -210,7 +210,8 @@ router.post("/allbills", (req, res) => {
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (bills.bill_date >= ? AND bills.bill_date <= ?)
                                 AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)
-                                AND payment_status = ?`,
+                                AND payment_status = ? 
+                                ORDER by bills.bill_date DESC`,
             [
               params.date1,
               params.date2,
@@ -239,7 +240,8 @@ router.post("/allbills", (req, res) => {
             `SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND bills.bill_date >= ? AND bills.bill_date <= ?
-                                AND payment_status = ?`,
+                                AND payment_status = ?
+                                ORDER by bills.bill_date DESC`,
             [params.date1, params.date2, params.searchType],
             (err, rows) => {
               connection.release() //return the connection to the pool
@@ -258,7 +260,8 @@ router.post("/allbills", (req, res) => {
             `SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? )
-                                AND payment_status = ?`,
+                                AND payment_status = ?
+                                ORDER by bills.bill_date DESC`,
             [
               params.searchText,
               params.searchText,
@@ -287,7 +290,8 @@ router.post("/allbills", (req, res) => {
             `SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (bills.bill_date >= ? AND bills.bill_date <= ?)
-                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)`,
+                                AND (bills.customer_name = ? OR bills.invoice_id = ? OR bills.customer_phoneno = ?)
+                                ORDER by bills.bill_date DESC`,
             [
               params.date1,
               params.date2,
@@ -314,7 +318,8 @@ router.post("/allbills", (req, res) => {
           connection.query(
             `SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
-                                AND bills.bill_date >= ? AND bills.bill_date <= ?`,
+                                AND bills.bill_date >= ? AND bills.bill_date <= ?
+                                ORDER by bills.bill_date DESC`,
             [params.date1, params.date2],
             (err, rows) => {
               connection.release() //return the connection to the pool
@@ -332,7 +337,8 @@ router.post("/allbills", (req, res) => {
           connection.query(
             `SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
-                                AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? )`,
+                                AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? )
+                                ORDER by bills.bill_date DESC`,
             [params.searchText, params.searchText, params.searchText],
             (err, rows) => {
               connection.release() //return the connection to the pool
