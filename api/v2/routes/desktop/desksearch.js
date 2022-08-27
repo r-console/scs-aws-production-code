@@ -399,6 +399,9 @@ router.post("/getlocations", (req, res) => {
 
           if (!err) {
             console.log(rows)
+            for (let i = 0; i < rows.length; i++) {
+              rows[i].id = i + 1
+            }
             res.status(200).send(rows)
           } else {
             console.log("error")
