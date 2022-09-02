@@ -96,7 +96,7 @@ router.post("/addbill", (req, res, next) => {
                                       (err, loc) => {
                                         if (!err) {
                                           if (
-                                            item.Bill.payment_method ===
+                                            params.Bill.payment_method ===
                                             "Calls Pending"
                                           ) {
                                             const pend = {
