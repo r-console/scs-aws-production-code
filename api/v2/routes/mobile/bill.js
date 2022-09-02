@@ -28,121 +28,135 @@ router.post("/addbill", (req, res, next) => {
       let s_sign_name = uuidv4()
       let c_sign_name = uuidv4()
 
-      buf1 = Buffer.from(
-        req.body.Bill.s_sign.replace(/^data:image\/\w+;base64,/, ""),
-        "base64"
-      )
-      const result1 = await uploadBase64(buf1, s_sign_name)
-      if (result1 === 0) {
-        buf2 = Buffer.from(
-          req.body.Bill.c_sign.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        )
-        const result2 = await uploadBase64(buf2, c_sign_name)
-        if (result2 === 0) {
-          params.Bill.s_sign = s_sign_name
-          params.Bill.c_sign = c_sign_name
-          params.Bill.payment_status = "PENDING"
+      connection.query(
+        "SELECT * FROM bills WHERE invoice_id = ?",
+        [params.Bill.invoice_id],
+        async (err, rows) => {
+          if (rows.length == 0) {
+            buf1 = Buffer.from(
+              req.body.Bill.s_sign.replace(/^data:image\/\w+;base64,/, ""),
+              "base64"
+            )
+            const result1 = await uploadBase64(buf1, s_sign_name)
+            if (result1 === 0) {
+              buf2 = Buffer.from(
+                req.body.Bill.c_sign.replace(/^data:image\/\w+;base64,/, ""),
+                "base64"
+              )
+              const result2 = await uploadBase64(buf2, c_sign_name)
+              if (result2 === 0) {
+                params.Bill.s_sign = s_sign_name
+                params.Bill.c_sign = c_sign_name
+                params.Bill.payment_status = "PENDING"
 
-          if (
-            params.Bill.customer_phoneno == 0 ||
-            params.Bill.customer_phoneno == "0" ||
-            params.Bill.customer_phoneno == ""
-          ) {
-            params.Bill.customer_phoneno = null
-          }
-          connection.query(
-            "INSERT INTO bills SET ?",
-            params.Bill,
-            (err, rows) => {
-              // connection.release()    //return the connection to the pool
-
-              const insert_id = rows.insertId
-
-              if (!err) {
-                // add bill locations
+                if (
+                  params.Bill.customer_phoneno == 0 ||
+                  params.Bill.customer_phoneno == "0" ||
+                  params.Bill.customer_phoneno == ""
+                ) {
+                  params.Bill.customer_phoneno = null
+                }
                 connection.query(
-                  "UPDATE employee SET last_invoice_id = ? WHERE id = ?",
-                  [params.last_invoice_id, params.Bill.employee_id],
+                  "INSERT INTO bills SET ?",
+                  params.Bill,
                   (err, rows) => {
+                    // connection.release()    //return the connection to the pool
+
+                    const insert_id = rows.insertId
+
                     if (!err) {
+                      // add bill locations
                       connection.query(
-                        "INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?",
-                        [
-                          params.machineDetails.map((item) => [
-                            item.machineModel,
-                            item.partNo,
-                            insert_id,
-                          ]),
-                        ],
-                        (err, mrows) => {
+                        "UPDATE employee SET last_invoice_id = ? WHERE id = ?",
+                        [params.last_invoice_id, params.Bill.employee_id],
+                        (err, rows) => {
                           if (!err) {
-                            if (req.body.bill_location) {
-                              const { bill_location } = req.body
-                              const loc_data = {
-                                lat: bill_location.latitude,
-                                lng: bill_location.longitude,
-                                bill_id: insert_id,
-                                emp_id: params.Bill.employee_id,
-                              }
-                              connection.query(
-                                "INSERT INTO billing_locations SET ?",
-                                loc_data,
-                                (err, loc) => {
-                                  if (!err) {
-                                    if (
-                                      item.Bill.payment_method ===
-                                      "Calls Pending"
-                                    ) {
-                                      const pend = {
-                                        bill_id: insert_id,
-                                        status: "pending",
-                                      }
-                                      connection.query(
-                                        "INSERT INTO callspending_update SET ?",
-                                        pend,
-                                        (finerr, fin) => {
-                                          if (!finerr) {
-                                            connection.release() //return the connection to the pool
+                            connection.query(
+                              "INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?",
+                              [
+                                params.machineDetails.map((item) => [
+                                  item.machineModel,
+                                  item.partNo,
+                                  insert_id,
+                                ]),
+                              ],
+                              (err, mrows) => {
+                                if (!err) {
+                                  if (req.body.bill_location) {
+                                    const { bill_location } = req.body
+                                    const loc_data = {
+                                      lat: bill_location.latitude,
+                                      lng: bill_location.longitude,
+                                      bill_id: insert_id,
+                                      emp_id: params.Bill.employee_id,
+                                    }
+                                    connection.query(
+                                      "INSERT INTO billing_locations SET ?",
+                                      loc_data,
+                                      (err, loc) => {
+                                        if (!err) {
+                                          if (
+                                            item.Bill.payment_method ===
+                                            "Calls Pending"
+                                          ) {
+                                            const pend = {
+                                              bill_id: insert_id,
+                                              status: "pending",
+                                            }
+                                            connection.query(
+                                              "INSERT INTO callspending_update SET ?",
+                                              pend,
+                                              (finerr, fin) => {
+                                                if (!finerr) {
+                                                  connection.release() //return the connection to the pool
+                                                  res.send({
+                                                    message:
+                                                      "Successfully inserted bill details and machine details",
+                                                    status: 200,
+                                                  })
+                                                } else {
+                                                  console.log(err)
+                                                  res.send({
+                                                    message: "some error",
+                                                    status: 500,
+                                                  })
+                                                }
+                                              }
+                                            )
+                                          } else {
+                                            connection.release()
                                             res.send({
                                               message:
                                                 "Successfully inserted bill details and machine details",
                                               status: 200,
                                             })
-                                          } else {
-                                            console.log(err)
-                                            res.send({
-                                              message: "some error",
-                                              status: 500,
-                                            })
                                           }
+                                        } else {
+                                          console.log(err)
+                                          res.send({
+                                            message: "some error",
+                                            status: 500,
+                                          })
                                         }
-                                      )
-                                    } else {
-                                      connection.release()
-                                      res.send({
-                                        message:
-                                          "Successfully inserted bill details and machine details",
-                                        status: 200,
-                                      })
-                                    }
+                                      }
+                                    )
                                   } else {
-                                    console.log(err)
+                                    connection.release() //return the connection to the pool
                                     res.send({
-                                      message: "some error",
-                                      status: 500,
+                                      message:
+                                        "Successfully inserted bill details and machine details",
+                                      status: 200,
                                     })
                                   }
+                                } else {
+                                  console.log(err)
+                                  res.send({
+                                    message: "some error",
+                                    status: 500,
+                                  })
                                 }
-                              )
-                            } else {
-                              connection.release() //return the connection to the pool
-                              res.send({
-                                message:
-                                  "Successfully inserted bill details and machine details",
-                                status: 200,
-                              })
-                            }
+                              }
+                            )
                           } else {
                             console.log(err)
                             res.send({ message: "some error", status: 500 })
@@ -156,15 +170,19 @@ router.post("/addbill", (req, res, next) => {
                   }
                 )
               } else {
-                console.log(err)
                 res.send({ message: "some error", status: 500 })
               }
+            } else {
+              res.send({ message: "some error", status: 500 })
             }
-          )
-        } else {
+          } else {
+            res.send({
+              message: "Successfully inserted bill details and machine details",
+              status: 200,
+            })
+          }
         }
-      } else {
-      }
+      )
     })
   } catch (error) {
     console.log(error)
@@ -190,134 +208,136 @@ router.post("/addofflinebill", (req, res, next) => {
           item.Bill.s_sign.replace(/^data:image\/\w+;base64,/, ""),
           "base64"
         )
-        const result1 = await uploadBase64(buf1, s_sign_name)
-        if (result1 === 0) {
-          buf2 = Buffer.from(
-            item.Bill.c_sign.replace(/^data:image\/\w+;base64,/, ""),
-            "base64"
-          )
-          const result2 = await uploadBase64(buf2, c_sign_name)
-          if (result2 === 0) {
-            item.Bill.s_sign = s_sign_name
-            item.Bill.c_sign = c_sign_name
-            item.Bill.payment_status = "PENDING"
 
-            connection.query(
-              "INSERT INTO bills SET ?",
-              item.Bill,
-              (err, rows) => {
-                if (!err) {
-                  let iv_id = item.last_invoice_id
-
-                  const insert_id = rows.insertId
+        connection.query(
+          "SELECT * FROM bills WHERE invoice_id = ?",
+          [item.Bill.invoice_id],
+          async (err, rows) => {
+            if (rows.length == 0) {
+              const result1 = await uploadBase64(buf1, s_sign_name)
+              if (result1 === 0) {
+                buf2 = Buffer.from(
+                  item.Bill.c_sign.replace(/^data:image\/\w+;base64,/, ""),
+                  "base64"
+                )
+                const result2 = await uploadBase64(buf2, c_sign_name)
+                if (result2 === 0) {
+                  item.Bill.s_sign = s_sign_name
+                  item.Bill.c_sign = c_sign_name
+                  item.Bill.payment_status = "PENDING"
 
                   connection.query(
-                    "UPDATE employee SET last_invoice_id = ? WHERE id = ?",
-                    [iv_id, item.Bill.employee_id],
+                    "INSERT INTO bills SET ?",
+                    item.Bill,
                     (err, rows) => {
                       if (!err) {
+                        let iv_id = item.last_invoice_id
+
+                        const insert_id = rows.insertId
+
                         connection.query(
-                          "INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?",
-                          [
-                            item.machineDetails.map((item) => [
-                              item.machineModel,
-                              item.partNo,
-                              insert_id,
-                            ]),
-                          ],
-                          (errr, mrows) => {
-                            if (!errr) {
-                              if (req.body.bill_location) {
-                                const { bill_location } = req.body
-                                const loc_data = {
-                                  lat: bill_location.latitude,
-                                  lng: bill_location.longitude,
-                                  bill_id: insert_id,
-                                  emp_id: params.Bill.employee_id,
-                                }
-                                connection.query(
-                                  "INSERT INTO billing_locations SET ?",
-                                  loc_data,
-                                  (err, loc) => {
-                                    if (!err) {
-                                      if (
-                                        item.Bill.payment_method ===
-                                        "Calls Pending"
-                                      ) {
-                                        const pend = {
-                                          bill_id: insert_id,
-                                          status: "pending",
-                                        }
-                                        connection.query(
-                                          "INSERT INTO callspending_update SET ?",
-                                          pend,
-                                          (finerr, fin) => {
-                                            if (!finerr) {
-                                              connection.release() //return the connection to the pool
-                                              res.send({
-                                                message:
-                                                  "Successfully inserted bill details and machine details",
-                                                status: 200,
-                                              })
-                                            } else {
-                                              console.log(err)
-                                              res.send({
-                                                message: "some error",
-                                                status: 500,
-                                              })
-                                            }
-                                          }
-                                        )
-                                      } else {
-                                        connection.release() //return the connection to the pool
-                                        res.send({
-                                          message:
-                                            "Successfully inserted bill details and machine details",
-                                          status: 200,
-                                        })
-                                      }
-                                    } else {
-                                      console.log(err)
-                                      res.send({
-                                        message: "some error",
-                                        status: 500,
-                                      })
+                          "UPDATE employee SET last_invoice_id = ? WHERE id = ?",
+                          [iv_id, item.Bill.employee_id],
+                          (err, rows) => {
+                            if (!err) {
+                              connection.query(
+                                "INSERT INTO machine (machineModel, partNo, bill_id) VALUES ?",
+                                [
+                                  item.machineDetails.map((item) => [
+                                    item.machineModel,
+                                    item.partNo,
+                                    insert_id,
+                                  ]),
+                                ],
+                                (errr, mrows) => {
+                                  if (!errr) {
+                                    const { bill_location } = req.body
+                                    const loc_data = {
+                                      lat: bill_location.latitude,
+                                      lng: bill_location.longitude,
+                                      bill_id: insert_id,
+                                      emp_id: params.Bill.employee_id,
                                     }
+                                    connection.query(
+                                      "INSERT INTO billing_locations SET ?",
+                                      loc_data,
+                                      (err, loc) => {
+                                        if (!err) {
+                                          if (
+                                            item.Bill.payment_method ===
+                                            "Calls Pending"
+                                          ) {
+                                            const pend = {
+                                              bill_id: insert_id,
+                                              status: "pending",
+                                            }
+                                            connection.query(
+                                              "INSERT INTO callspending_update SET ?",
+                                              pend,
+                                              (finerr, fin) => {
+                                                if (!finerr) {
+                                                  connection.release() //return the connection to the pool
+                                                  res.send({
+                                                    message:
+                                                      "Successfully inserted bill details and machine details",
+                                                    status: 200,
+                                                  })
+                                                } else {
+                                                  console.log(err)
+                                                  res.send({
+                                                    message: "some error",
+                                                    status: 500,
+                                                  })
+                                                }
+                                              }
+                                            )
+                                          } else {
+                                            connection.release() //return the connection to the pool
+                                            res.send({
+                                              message:
+                                                "Successfully inserted bill details and machine details",
+                                              status: 200,
+                                            })
+                                          }
+                                        } else {
+                                          console.log(err)
+                                          res.send({
+                                            message: "some error",
+                                            status: 500,
+                                          })
+                                        }
+                                      }
+                                    )
                                   }
-                                )
-                              } else {
-                                //else need to remove after app update with location
-                                connection.release() //return the connection to the pool
-                                res.send({
-                                  message:
-                                    "Successfully inserted bill details and machine details",
-                                  status: 200,
-                                })
-                              }
+                                }
+                              )
                             }
                           }
                         )
+                      } else {
+                        console.log(err)
+                        res.send({
+                          message: "some error",
+                          status: 500,
+                        })
                       }
                     }
                   )
-                } else {
-                  console.log(err)
-                  inserted = 1
                 }
               }
-            )
+            }
           }
-        }
+        )
       })
 
-      if (inserted == 0) {
-        res.send({
-          message: "Successfully inserted bill details and machine details",
-          status: 200,
-        })
-      } else {
-        res.send({ message: "some error", status: 500 })
-      }
+      // if (inserted == 0) {
+      //   res.send({
+      //     message: "Successfully inserted bill details and machine details",
+      //     status: 200,
+      //   })
+      // } else {
+      //   res.send({ message: "some error", status: 500 })
+      // }
     })
   } catch (error) {
     console.log(error)
