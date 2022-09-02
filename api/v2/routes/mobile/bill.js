@@ -276,35 +276,17 @@ router.post("/addofflinebill", (req, res, next) => {
                                               pend,
                                               (finerr, fin) => {
                                                 if (!finerr) {
-                                                  connection.release() //return the connection to the pool
-                                                  res.send({
-                                                    message:
-                                                      "Successfully inserted bill details and machine details",
-                                                    status: 200,
-                                                  })
+                                                  inserted = 0
                                                 } else {
                                                   console.log(err)
-                                                  res.send({
-                                                    message: "some error",
-                                                    status: 500,
-                                                  })
+                                                  inserted = 1
                                                 }
                                               }
                                             )
-                                          } else {
-                                            connection.release() //return the connection to the pool
-                                            res.send({
-                                              message:
-                                                "Successfully inserted bill details and machine details",
-                                              status: 200,
-                                            })
                                           }
                                         } else {
                                           console.log(err)
-                                          res.send({
-                                            message: "some error",
-                                            status: 500,
-                                          })
+                                          inserted = 1
                                         }
                                       }
                                     )
@@ -316,10 +298,7 @@ router.post("/addofflinebill", (req, res, next) => {
                         )
                       } else {
                         console.log(err)
-                        res.send({
-                          message: "some error",
-                          status: 500,
-                        })
+                        inserted = 1
                       }
                     }
                   )
@@ -330,14 +309,14 @@ router.post("/addofflinebill", (req, res, next) => {
         )
       })
 
-      // if (inserted == 0) {
-      //   res.send({
-      //     message: "Successfully inserted bill details and machine details",
-      //     status: 200,
-      //   })
-      // } else {
-      //   res.send({ message: "some error", status: 500 })
-      // }
+      if (inserted == 0) {
+        res.send({
+          message: "Successfully inserted bill details and machine details",
+          status: 200,
+        })
+      } else {
+        res.send({ message: "some error", status: 500 })
+      }
     })
   } catch (error) {
     console.log(error)
