@@ -74,7 +74,6 @@ router.post("/getbranchbills", (req, res) => {
             `SELECT bills.*, employee.employee_name FROM bills 
                                 JOIN employee ON (bills.employee_id = employee.id) 
                                 AND (employee.branch_id = ? AND (bills.customer_name = ? OR bills.customer_phoneno = ? OR bills.invoice_id = ? OR employee.employee_name=?))
-                                AND payment_status = ?
                                 ORDER by bills.bill_date DESC`,
             [
               params.branch_id,
@@ -82,7 +81,6 @@ router.post("/getbranchbills", (req, res) => {
               params.searchText,
               params.searchText,
               params.searchText,
-              params.searchType,
             ],
             (err, rows) => {
               connection.release() //return the connection to the pool
