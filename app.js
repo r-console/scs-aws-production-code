@@ -35,10 +35,10 @@ const pool = mysql.createPool({
   password: "nodejs#$#878",
   database: "scsappdbservices",
 
-  // host:'localhost',
-  // user:'root',
-  // password:'root',
-  // database:'SCSbilling'
+  // host: "localhost",
+  // user: "root",
+  // password: "root",
+  // database: "SCSbilling",
 
   // username and password
   // scs2021admin

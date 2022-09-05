@@ -397,7 +397,7 @@ router.post("/getlocations", (req, res) => {
       if (err) throw err
 
       connection.query(
-        `SELECT b.bill_date, b.customer_address, loc.* FROM billing_locations as loc
+        `SELECT b.invoice_id, b.bill_date, b.customer_address, b.in_time, b.out_time, loc.* FROM billing_locations as loc
             JOIN bills as b ON loc.bill_id = b.id AND loc.emp_id = ? AND cast (b.bill_date as date) = ?`,
         [searchEmpId, searchDate],
         (err, rows) => {
@@ -408,6 +408,75 @@ router.post("/getlocations", (req, res) => {
             for (let i = 0; i < rows.length; i++) {
               rows[i].id = i + 1
             }
+            res.status(200).send(rows)
+          } else {
+            console.log("error")
+            console.log(err)
+          }
+        }
+      )
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ status: 300 })
+  }
+})
+
+// live locations
+router.post("/getlivelocations", (req, res) => {
+  try {
+    console.log("/getlivelocations url called")
+    const { searchDate, searchEmpId } = req.body
+    console.log(req.body)
+
+    pool.getConnection((err, connection) => {
+      if (err) throw err
+
+      connection.query(
+        `SELECT * FROM live_locations WHERE emp_id = ? AND cast (loc_date as date) = ?`,
+        [searchEmpId, searchDate],
+        (err, rows) => {
+          connection.release() //return the connection to the pool
+
+          if (!err) {
+            console.log(rows)
+            // for (let i = 0; i < rows.length; i++) {
+            //   rows[i].id = i + 1
+            // }
+            res.status(200).send(rows)
+          } else {
+            console.log("error")
+            console.log(err)
+          }
+        }
+      )
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ status: 300 })
+  }
+})
+
+router.post("/getloginrec", (req, res) => {
+  try {
+    console.log("/getloginrec url called")
+    const { searchDate, searchEmpId } = req.body
+    console.log(req.body)
+
+    pool.getConnection((err, connection) => {
+      if (err) throw err
+
+      connection.query(
+        `SELECT * FROM login_recod WHERE emp_id = ? AND cast (log_date as date) = ?`,
+        [searchEmpId, searchDate],
+        (err, rows) => {
+          connection.release() //return the connection to the pool
+
+          if (!err) {
+            console.log(rows)
+            // for (let i = 0; i < rows.length; i++) {
+            //   rows[i].id = i + 1
+            // }
             res.status(200).send(rows)
           } else {
             console.log("error")

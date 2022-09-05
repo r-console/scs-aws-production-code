@@ -16,6 +16,7 @@ const dashboardRoutes = require("./routes/mobile/dashboard")
 const searchdRoutes = require("./routes/mobile/search")
 const versionRoutes = require("./routes/mobile/version")
 const callspending = require("./routes/mobile/callspending")
+const Location = require("./routes/mobile/LiveLocation")
 
 // common
 const S3UploadRoutes = require("./routes/common/s3uploads")
@@ -38,6 +39,7 @@ app.use("/dashboard", dashboardRoutes)
 app.use("/search", searchdRoutes)
 app.use("/version", versionRoutes)
 app.use("/callspending", callspending)
+app.use("/location", Location)
 
 // common
 app.use("/s3image", S3UploadRoutes)
